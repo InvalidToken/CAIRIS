@@ -16,22 +16,16 @@
 #  under the License.
 
 
-from Borg import Borg
+import string
+
 import MySQLdb
+import _mysql_exceptions
+from numpy import *
+import os
+
+from Borg import Borg
 import RequirementFactory
-from Environment import Environment
 from ARM import *
-import _mysql_exceptions 
-import Attacker
-import Asset
-import Threat
-import Vulnerability
-import Persona
-import MisuseCase
-import Task
-import Risk
-import Response
-import ClassAssociation
 import DatabaseProxy
 from AttackerParameters import AttackerParameters
 from PersonaParameters import PersonaParameters
@@ -46,15 +40,18 @@ from VulnerabilityParameters import VulnerabilityParameters
 from RiskParameters import RiskParameters
 from ResponseParameters import ResponseParameters
 from RoleParameters import RoleParameters
-from ResponsibilityParameters import ResponsibilityParameters
 import ObjectFactory
 from TaskParameters import TaskParameters
 from MisuseCaseParameters import MisuseCaseParameters
 from DomainPropertyParameters import DomainPropertyParameters
+<<<<<<< HEAD:cairis/core/MySQLDatabaseProxy.py
 import TraceParameters
 import UpdateTraceParameters
 import Trace
 from cairis.core.armid import *
+=======
+import armid
+>>>>>>> web/master:cairis/cairis/MySQLDatabaseProxy.py
 from DotTraceParameters import DotTraceParameters
 from EnvironmentParameters import EnvironmentParameters
 from Target import Target
@@ -87,8 +84,6 @@ from DocumentReferenceParameters import DocumentReferenceParameters
 from ConceptReferenceParameters import ConceptReferenceParameters
 from PersonaCharacteristicParameters import PersonaCharacteristicParameters
 from TaskCharacteristicParameters import TaskCharacteristicParameters
-from UseCaseParameters import UseCaseParameters
-from UseCase import UseCase
 from UseCaseEnvironmentProperties import UseCaseEnvironmentProperties
 from UseCaseParameters import UseCaseParameters
 from Step import Step
@@ -98,15 +93,9 @@ from ReferenceContribution import ReferenceContribution
 from ConceptMapAssociationParameters import ConceptMapAssociationParameters
 from ComponentViewParameters import ComponentViewParameters;
 from ComponentParameters import ComponentParameters;
-from ConnectorParameters import ConnectorParameters;
 from WeaknessTarget import WeaknessTarget
-from ImpliedProcess import ImpliedProcess
 from ImpliedProcessParameters import ImpliedProcessParameters
 
-import string
-import os
-
-from numpy import *
 
 LABEL_COL = 0
 ID_COL = 1
@@ -309,24 +298,54 @@ REFERENCE_DIM_COL = 3
 collectedIds = set([])
 
 class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
-  def __init__(self):
+  def __init__(self, host=None, port=None, user=None, passwd=None, db=None):
     DatabaseProxy.DatabaseProxy.__init__(self)
     self.theGrid = 0
-    try:
+
+    if (host is None or port is None or user is None or passwd is None or db is None):
       b = Borg()
-      self.conn = MySQLdb.connect(host=b.dbHost,port=b.dbPort,user=b.dbUser,passwd=b.dbPasswd,db=b.dbName)
+      host = b.dbHost
+      port = b.dbPort
+      user = b.dbUser
+      passwd = b.dbPasswd
+      db = b.dbName
+
+    try:
+      self.conn = MySQLdb.connect(host=host,port=port,user=user,passwd=passwd,db=db)
+      self.prepareDatabase()
     except _mysql_exceptions.DatabaseError, e:
       id,msg = e
-      exceptionText = 'MySQL error connecting to the IRIS database on host ' + b.dbHost + ' at port ' + str(b.dbPort) + ' with user ' + b.dbUser + ' (id:' + str(id) + ',message:' + msg
-      raise DatabaseProxyException(exceptionText) 
-    self.theDimIdLookup, self.theDimNameLookup = self.buildDimensionLookup()
+      exceptionText = 'MySQL error connecting to the IRIS database on host ' + host + ' at port ' + str(port) + ' with user ' + user + ' (id:' + str(id) + ',message:' + msg
+      raise DatabaseProxyException(exceptionText)
 
-  def reconnect(self,closeConn = True):
     try:
-      if (closeConn):
+        self.theDimIdLookup, self.theDimNameLookup = self.buildDimensionLookup()
+    except TypeError:
+        print('Database is corrupt. Please re-import procs.sql and init.sql.')
+        exit(1)
+
+  def reconnect(self,closeConn = True, session_id=None):
+    try:
+      if (closeConn) and self.conn.open:
         self.conn.close()
       b = Borg()
-      self.conn = MySQLdb.connect(host=b.dbHost,port=b.dbPort,user=b.dbUser,passwd=b.dbPasswd,db=b.dbName)
+      if b.runmode == 'desktop':
+        host = b.dbHost
+        port = b.dbPort
+        user = b.dbUser
+        passwd = b.dbPasswd
+        db = b.dbName
+      elif b.runmode == 'web':
+        ses_settings = b.get_settings(session_id)
+        host = ses_settings['dbHost']
+        port = ses_settings['dbPort']
+        user = ses_settings['dbUser']
+        passwd = ses_settings['dbPasswd']
+        db = ses_settings['dbName']
+      else:
+        raise RuntimeError('Run mode not recognized')
+
+      self.conn = MySQLdb.connect(host=host,port=port,user=user,passwd=passwd,db=db)
     except _mysql_exceptions.DatabaseError, e:
       id,msg = e
       exceptionText = 'MySQL error connecting to the IRIS database on host ' + b.dbHost + ' at port ' + str(b.dbPort) + ' with user ' + b.dbUser + ' (id:' + str(id) + ',message:' + msg
@@ -356,7 +375,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       exceptionText = 'MySQL error building dimension lookup tables (id:' + str(id) + ',message:' + msg
     
   def close(self):
-    self.conn.close()
+    if self.conn.open:
+        self.conn.close()
 
   def getRequirements(self,constraintId = '',isAsset = 1):
     try:
@@ -8765,17 +8785,40 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       exceptionText = 'MySQL selecting interim redmine goals (id:' + str(id) + ',message:' + msg + ')'
       raise DatabaseProxyException(exceptionText) 
 
-  def clearDatabase(self):
+  def clearDatabase(self, session_id=None):
     b = Borg()
+<<<<<<< HEAD:cairis/core/MySQLDatabaseProxy.py
     b.dbProxy.close()
     srcDir = b.cairisRoot + '/sql'
+=======
+    if b.runmode == 'desktop':
+      db_proxy = b.dbProxy
+      host = b.dbHost
+      port = b.dbPort
+      user = b.dbUser
+      passwd = b.dbPasswd
+      db = b.dbName
+    elif b.runmode == 'web':
+      ses_settings = b.get_settings(session_id)
+      db_proxy = ses_settings['dbProxy']
+      host = ses_settings['dbHost']
+      port = ses_settings['dbPort']
+      user = ses_settings['dbUser']
+      passwd = ses_settings['dbPasswd']
+      db = ses_settings['dbName']
+    else:
+      raise RuntimeError('Run mode not recognized')
+
+    db_proxy.close()
+    srcDir = b.cairisRoot + '/cairis/sql'
+>>>>>>> web/master:cairis/cairis/MySQLDatabaseProxy.py
     initSql = srcDir + '/init.sql'
     procsSql = srcDir + '/procs.sql'
-    cmd = '/usr/bin/mysql -h ' + b.dbHost + ' -u ' + b.dbUser + ' --password=\'' + b.dbPasswd + '\'' + ' --database ' + b.dbName + ' < ' + initSql
+    cmd = '/usr/bin/mysql -h ' + host + ' --port=' + str(port) + ' -u ' + user + ' --password=\'' + passwd + '\'' + ' --database ' + db + ' < ' + initSql
     os.system(cmd)
-    cmd = '/usr/bin/mysql -h ' + b.dbHost + ' -u ' + b.dbUser + ' --password=\'' + b.dbPasswd + '\'' + ' --database ' + b.dbName + ' < ' + procsSql
+    cmd = '/usr/bin/mysql -h ' + host + ' --port=' + str(port) + ' -u ' + user + ' --password=\'' + passwd + '\'' + ' --database ' + db + ' < ' + procsSql
     os.system(cmd)
-    b.dbProxy.reconnect(False)
+    db_proxy.reconnect(False, session_id)
 
   def conceptMapModel(self,envName,reqName = ''):
     try:
@@ -11464,6 +11507,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     except _mysql_exceptions.DatabaseError, e:
       id,msg = e
       exceptionText = 'MySQL error getting denied goals for code ' + codeName + ' (id:' + str(id) + ',message:' + msg + ')'
+<<<<<<< HEAD:cairis/core/MySQLDatabaseProxy.py
       raise DatabaseProxyException(exceptionText) 
 
   def addLocations(self,locsName,locDiagram,locations,links):
@@ -11696,3 +11740,45 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       id,msg = e
       exceptionText = 'MySQL error getting location risk model (id:' + str(id) + ',message:' + msg + ')'
       raise DatabaseProxyException(exceptionText) 
+=======
+      raise DatabaseProxyException(exceptionText)
+
+  def prepareDatabase(self):
+    try:
+      import logging
+      logger = logging.getLogger(__name__)
+      self.conn.query('select @@max_sp_recursion_depth;')
+      result = self.conn.store_result()
+      real_result = result.fetch_row()
+      if (len(real_result) < 1):
+          exceptionText = 'Error getting max_sp_recursion_depth from database'
+          raise DatabaseProxyException(exceptionText)
+
+      try:
+          rec_value = real_result[0][0]
+      except LookupError:
+          rec_value = -1
+
+      if rec_value == -1:
+          logger.warning('Unable to get max_sp_recursion_depth. Be sure max_sp_recursion_depth is set to 255 or more.')
+      elif rec_value < 255:
+          self.conn.query('set max_sp_recursion_depth = 255')
+          self.conn.store_result()
+
+          self.conn.query('select @@max_sp_recursion_depth;')
+          result = self.conn.use_result()
+          real_result = result.fetch_row()
+
+          try:
+              rec_value = real_result[0][0]
+              logger.debug('max_sp_recursion_depth is %d.' % rec_value)
+              if rec_value < 255:
+                logger.warning('WARNING: some features may not work because the maximum recursion depth for stored procedures is too low')
+          except LookupError:
+              logger.warning('Unable to get max_sp_recursion_depth. Be sure max_sp_recursion_depth is set to 255 or more.')
+
+    except _mysql_exceptions.DatabaseError, e:
+      id,msg = e
+      exceptionText = 'MySQL error getting while preparing database'
+      raise DatabaseProxyException(exceptionText)
+>>>>>>> web/master:cairis/cairis/MySQLDatabaseProxy.py

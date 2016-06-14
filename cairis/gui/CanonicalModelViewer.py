@@ -159,6 +159,8 @@ class CanonicalModelViewer(kaosxdot.KaosDotWindow):
         self.environmentCombo.set_active(environmentNames.index(self.environment.name()))
       self.unblockHandlers()
       self.widget.zoom_to_fit()
+    except DatabaseProxyException, ex:
+      print(ex.value)
     except ARMException,errorText:
       if hasattr(errorText, 'value'):
         if isinstance(errorText.value, DatabaseProxyException):

@@ -28,6 +28,7 @@ from cairis.core.colourcodes import usabilityTextColourCode
 from cairis.core.colourcodes import threatColourCode
 from cairis.core.colourcodes import obstacleColourCode
 
+
 class KaosModel:
   def __init__(self,associations,envName,kaosModelType = 'goal',goalName = ''):
     self.theAssociations = associations

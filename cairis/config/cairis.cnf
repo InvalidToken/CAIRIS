@@ -1,8 +1,16 @@
-dbhost = 127.0.0.1
-dbport = 3306
-dbuser = irisuser
+dbhost = 
+dbport = 
+dbuser = 
 dbpasswd = 
-dbname = arm
+dbname = 
 tmp_dir = /tmp
+<<<<<<< HEAD:cairis/config/cairis.cnf
 root = /home/cairisuser/cairis/cairis
 default_image_dir = .
+=======
+root = 
+web_port = 
+log_level = warning
+web_static_dir = 
+upload_dir = 
+>>>>>>> web/master:cairis/cairis/config/cairis.cnf
