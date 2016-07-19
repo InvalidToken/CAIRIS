@@ -53,7 +53,7 @@ def handle_user_login_form():
     try:
         dict_form = request.form
 
-        login = {
+        conf = {
             'username': dict_form['username'],
             'password': dict_form['password'],
             'jsonPrettyPrint': dict_form.get('jsonPrettyPrint', False) == 'on'
