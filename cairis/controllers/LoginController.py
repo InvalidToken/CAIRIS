@@ -7,7 +7,7 @@ from jsonpickle import encode
 
 from cairis.core.Borg import Borg
 from cairis.daemon.CairisHTTPError import MissingParameterHTTPError, MalformedJSONHTTPError
-from cairis.tools.ModelDefinitions import UserConfigModel
+from cairis.tools.ModelDefinitions import UserLoginModel
 from cairis.tools.SessionValidator import validate_proxy, get_logger
 
 
@@ -22,12 +22,8 @@ def set_dbproxy(conf):
     id = b.init_settings()
     db_proxy.close()
     session['session_id'] = id
-    b.settings[id]['dbProxy'] = db_proxy
-    b.settings[id]['dbUser'] = conf['user']
-    b.settings[id]['dbPasswd'] = conf['passwd']
-    b.settings[id]['dbHost'] = conf['host']
-    b.settings[id]['dbPort'] = conf['port']
-    b.settings[id]['dbName'] = conf['db']
+    b.settings[id]['username'] = conf['username']
+    b.settings[id]['password'] = conf['password']
     b.settings[id]['fontSize'] = pSettings['Font Size']
     b.settings[id]['apFontSize'] = pSettings['AP Font Size']
     b.settings[id]['fontName'] = pSettings['Font Name']
@@ -35,23 +31,20 @@ def set_dbproxy(conf):
 
     return b.settings[id]
 
-def serve_user_config_form():
+def serve_user_login_form():
     b = Borg()
     resp = make_response(b.template_generator.serve_result('user_config', action_url=request.full_path), httplib.OK)
     resp.headers['Content-type'] = 'text/html'
     resp.headers['Access-Control-Allow-Origin'] = "*"
     return resp
 
-def handle_user_config_form():
+def handle_user_login_form():
     try:
         dict_form = request.form
 
         conf = {
-            'host': dict_form['host'],
-            'port': int(dict_form['port']),
-            'user': dict_form['user'],
-            'passwd': dict_form['passwd'],
-            'db': dict_form['db'],
+            'username': dict_form['username'],
+            'password': dict_form['password'],
             'jsonPrettyPrint': dict_form.get('jsonPrettyPrint', False) == 'on'
         }
         s = set_dbproxy(conf)
@@ -67,19 +60,19 @@ def handle_user_config_form():
     except KeyError as ex:
         return MissingParameterHTTPError(exception=ex)
 
-class UserConfigAPI(Resource):
+class UserLoginAPI(Resource):
     # region Swagger Doc
     @swagger.operation(
         notes='Sets up the user session',
-        nickname='user-config-post',
+        nickname='user-login-post',
         responseClass=str.__name__,
         parameters=[
             {
                 'name': 'body',
-                "description": "The configuration settings for the user's session",
+                "description": "The login settings for the user's session",
                 "required": True,
                 "allowMultiple": False,
-                'type': UserConfigModel.__name__,
+                'type': UserLoginModel.__name__,
                 'paramType': 'body'
             }
         ],

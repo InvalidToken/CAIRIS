@@ -30,7 +30,7 @@ from cairis.core.ARM import ARMException, DatabaseProxyException
 from cairis.controllers import AssetController, AttackerController, CImportController, DependencyController, \
     DimensionController, EnvironmentController, GoalController, MisuseCaseController, ProjectController, \
     RequirementController, ResponseController, RiskController, RoleController, ThreatController, \
-    UploadController, UserController, VulnerabilityController
+    UploadController, LoginController, VulnerabilityController
 
 __author__ = 'Robin Quetin'
 ''' This module uses Flask (tested using 0.10) & Flask-Restful (tested using 0.3.3) '''
@@ -108,12 +108,12 @@ def get_image(path):
             return send_from_directory('static/images', path)
 
 
-@app.route('/user/config.html', methods=['GET','POST'])
+@app.route('/user/login.html', methods=['GET','POST'])
 def user_config_get():
     if request.method == 'GET':
-        return UserController.serve_user_config_form()
+        return LoginController.serve_user_login_form()
     elif request.method == 'POST':
-        return UserController.handle_user_config_form()
+        return LoginController.handle_user_login_form()
     else:
         raise CairisHTTPError(httplib.NOT_FOUND, message='Not found')
 
@@ -271,7 +271,7 @@ def start():
     api.add_resource(UploadController.UploadImageAPI, '/api/upload/image')
 
     # User routes
-    api.add_resource(UserController.UserConfigAPI, '/api/user/config')
+    api.add_resource(LoginController.UserLoginAPI, '/api/user/login')
 
     # Vulnerability routes
     api.add_resource(VulnerabilityController.VulnerabilityAPI, '/api/vulnerabilities')

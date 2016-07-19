@@ -516,14 +516,11 @@ class ThreatModel(object):
     required.remove('likelihoodLookup')
 
 @swagger.model
-class UserConfigModel(object):
+class UserLoginModel(object):
     resource_fields = {
         "user": fields.String,
         "passwd": fields.String,
-        "db": fields.String,
-        "host": fields.String,
-        "port": fields.Integer,
-        "jsonPrettyPrint": fields.String
+       	"jsonPrettyPrint": fields.String
     }
     required = resource_fields.keys()
     required.remove("jsonPrettyPrint")

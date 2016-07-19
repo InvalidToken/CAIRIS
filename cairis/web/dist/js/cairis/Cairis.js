@@ -20,20 +20,17 @@ var dialogwindow = $( "#dialogContent" ).dialog({
         OK: function() {
             showLoading();
             var json_text = JSON.stringify($('#configForm').serializeObject());
-            var portArr  = json_text.match('port":"(.*)","user');
-            var port = portArr[1];
-            json_text = json_text.replace('"'+port+'"',port);
+            console.log(json_text);
             debugLogger(json_text);
             $.ajax({
                 type: 'POST',
-                url: serverIP + '/api/user/config',
+                url: serverIP + '/api/user/login',
                 data: json_text,
                 accept:"application/json",
                 contentType : "application/json",
                 success: function(data, status, xhr) {
-                    // console.log("DB Settings saved");
                     debugLogger(data);
-                   var sessionID = data.session_id;
+                    var sessionID = data.session_id;
                     $.session.set("sessionID", sessionID);
                     startingTable();
                     hideLoading();

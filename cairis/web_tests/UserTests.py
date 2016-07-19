@@ -26,16 +26,12 @@ __author__ = 'Robin Quetin'
 class UserTests(CairisTests):
     logger = logging.getLogger('UserTests')
     data = {
-        'host': '127.0.0.1',
-        'port': 3306,
-        'user': 'cairis',
-        'passwd': 'cairis123',
-        'db': 'cairis',
-        'jsonPrettyPrint': 'on'
+        'username': 'cairis',
+        'password': 'cairis123',
     }
 
     def test_user_config_form_post(self):
-        rv = self.app.post('/user/config.html', data=self.data, headers={'accept': 'text/html'})
+        rv = self.app.post('/user/login.html', data=self.data, headers={'accept': 'text/html'})
         self.assertIsNotNone(rv.data, 'No response')
         self.logger.info('Data: %s', rv.data)
         check = rv.data.find('session_id')
