@@ -1,5 +1,6 @@
 import httplib
 import logging
+import sys
 from flask.ext.restful_swagger import swagger
 from flask import request, make_response, session
 from flask.ext.restful import Resource
@@ -7,6 +8,7 @@ from jsonpickle import encode
 
 from cairis.core.Borg import Borg
 from cairis.daemon.CairisHTTPError import MissingParameterHTTPError, MalformedJSONHTTPError
+from cairis.core.BorgFactory import parseConfigFile
 from cairis.tools.ModelDefinitions import UserLoginModel
 from cairis.tools.SessionValidator import validate_proxy, get_logger
 
@@ -16,14 +18,23 @@ __author__ = 'Robin Quetin'
 
 def set_dbproxy(conf):
     b = Borg()
+    setting = parseConfigFile()
+    conf['user'] = conf['username']
+    conf['passwd'] = conf['password']
+    conf['host'] = setting['dbhost']
+    conf['port'] = setting['dbport']
+    conf['db'] = setting['dbname']
     db_proxy = validate_proxy(None, -1, conf=conf)
     pSettings = db_proxy.getProjectSettings()
-
     id = b.init_settings()
     db_proxy.close()
     session['session_id'] = id
-    b.settings[id]['username'] = conf['username']
-    b.settings[id]['password'] = conf['password']
+    b.settings[id]['dbProxy'] = db_proxy
+    b.settings[id]['dbUser'] = conf['user']
+    b.settings[id]['dbPasswd'] = conf['passwd']
+    b.settings[id]['dbHost'] = conf['host']
+    b.settings[id]['dbPort'] = conf['port']
+    b.settings[id]['dbName'] = conf['db']
     b.settings[id]['fontSize'] = pSettings['Font Size']
     b.settings[id]['apFontSize'] = pSettings['AP Font Size']
     b.settings[id]['fontName'] = pSettings['Font Name']
@@ -42,7 +53,7 @@ def handle_user_login_form():
     try:
         dict_form = request.form
 
-        conf = {
+        login = {
             'username': dict_form['username'],
             'password': dict_form['password'],
             'jsonPrettyPrint': dict_form.get('jsonPrettyPrint', False) == 'on'

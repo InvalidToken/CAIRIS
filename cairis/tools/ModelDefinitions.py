@@ -519,7 +519,7 @@ class ThreatModel(object):
 class UserLoginModel(object):
     resource_fields = {
         "user": fields.String,
-        "passwd": fields.String,
+        "password": fields.String,
        	"jsonPrettyPrint": fields.String
     }
     required = resource_fields.keys()

@@ -39,7 +39,7 @@ class UserTests(CairisTests):
 
     def test_user_config_json_post(self):
         data_str = jsonpickle.encode(self.data)
-        rv = self.app.post('/api/user/config', content_type='application/json', data=data_str)
+        rv = self.app.post('/api/user/login', content_type='application/json', data=data_str)
         self.assertIsNotNone(rv.data, 'No response')
         self.logger.info('Data: %s', rv.data)
         resp_dict = jsonpickle.decode(rv.data)
