@@ -26,6 +26,9 @@ from cairis.core.AssetParameters import AssetParameters
 from cairis.core.AssetEnvironmentProperties import AssetEnvironmentProperties
 from cairis.core.ARM import DatabaseProxyException
 
+__author__ = 'Shamal Faily'
+
+
 class AssetTest(unittest.TestCase):
 
   def setUp(self):
@@ -76,6 +79,16 @@ class AssetTest(unittest.TestCase):
     self.assertEqual(iaeps[0].rationale()[5], oaeps[0].rationale()[5])
     self.assertEqual(iaeps[0].rationale()[6], oaeps[0].rationale()[6])
     self.assertEqual(iaeps[0].rationale()[7], oaeps[0].rationale()[7])
+
+    envName = self.iassets[0]["theEnvironmentProperties"][0][0]
+    self.assertEqual(str(iaeps[0].properties()[0]), str(oap.securityProperties(envName,'',envName)[0]))
+    self.assertEqual(str(iaeps[0].properties()[1]), str(oap.securityProperties(envName,'',envName)[1]))
+    self.assertEqual(str(iaeps[0].properties()[2]), str(oap.securityProperties(envName,'',envName)[2]))
+    self.assertEqual(str(iaeps[0].properties()[3]), str(oap.securityProperties(envName,'',envName)[3]))
+    self.assertEqual(str(iaeps[0].properties()[4]), str(oap.securityProperties(envName,'',envName)[4]))
+    self.assertEqual(str(iaeps[0].properties()[5]), str(oap.securityProperties(envName,'',envName)[5]))
+    self.assertEqual(str(iaeps[0].properties()[6]), str(oap.securityProperties(envName,'',envName)[6]))
+    self.assertEqual(str(iaeps[0].properties()[7]), str(oap.securityProperties(envName,'',envName)[7]))
 
     oap.theShortCode = 'TESTCODE'
     b.dbProxy.updateAsset(oap)

@@ -51,6 +51,9 @@ from cairis.core.Target import Target
 import cairis.core.RequirementFactory
 from cairis.core.ARM import DatabaseProxyException
 
+__author__ = 'Shamal Faily'
+
+
 class CountermeasureTest(unittest.TestCase):
 
   def setUp(self):
@@ -193,11 +196,19 @@ class CountermeasureTest(unittest.TestCase):
     b.dbProxy.addCountermeasure(icm)
     ocms = b.dbProxy.getCountermeasures()
     ocm = ocms[self.iCountermeasures[0]["theName"]]
-
     self.assertEqual(icm.name(), ocm.name())
     self.assertEqual(icm.type(),ocm.type())
     self.assertEqual(icm.description(),ocm.description())
-    
+
+    icm.theName = 'Updated countermeasure'
+    icm.setId(ocm.id())
+    b.dbProxy.updateCountermeasure(icm)
+    ocms = b.dbProxy.getCountermeasures()
+    ocm = ocms['Updated countermeasure']
+    self.assertEqual('Updated countermeasure', ocm.name())
+    self.assertEqual(icm.type(),ocm.type())
+    self.assertEqual(icm.description(),ocm.description())
+
     b.dbProxy.deleteCountermeasure(ocm.id())
   
   def tearDown(self):

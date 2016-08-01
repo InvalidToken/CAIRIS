@@ -21,6 +21,8 @@ from cairis.core.EnvironmentParameters import EnvironmentParameters
 from cairis.core.ValueTypeParameters import ValueTypeParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 class LocationsContentHandler(ContentHandler,EntityResolver):
   def __init__(self):
     b = Borg()
@@ -33,7 +35,7 @@ class LocationsContentHandler(ContentHandler,EntityResolver):
     self.resetLocationAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/locations.dtd'
+    return systemId
 
   def name(self): return self.theLocationsName
   def diagram(self): return self.theDiagram

@@ -50,7 +50,6 @@ from PersonaCharacteristic import PersonaCharacteristic
 from TaskCharacteristic import TaskCharacteristic
 from Responsibility import Responsibility
 from ClassAssociation import ClassAssociation
-from DomainAssociation import DomainAssociation
 from GoalAssociation import GoalAssociation
 from Dependency import Dependency
 from AttackerParameters import AttackerParameters
@@ -83,12 +82,9 @@ from ThreatEnvironmentProperties import ThreatEnvironmentProperties
 from VulnerabilityEnvironmentProperties import VulnerabilityEnvironmentProperties
 from RoleEnvironmentProperties import RoleEnvironmentProperties
 from ClassAssociationParameters import ClassAssociationParameters
-from DomainAssociationParameters import DomainAssociationParameters
 from GoalAssociationParameters import GoalAssociationParameters
 from DependencyParameters import DependencyParameters
 from DomainPropertyParameters import DomainPropertyParameters
-from DomainParameters import DomainParameters
-from Domain import Domain
 from ValueType import ValueType
 from ValueTypeParameters import ValueTypeParameters
 from ExternalDocumentParameters import ExternalDocumentParameters
@@ -101,6 +97,8 @@ from UseCase import UseCase
 from UseCaseParameters import UseCaseParameters
 from ImpliedProcess import ImpliedProcess
 from ImpliedProcessParameters import ImpliedProcessParameters
+
+__author__ = 'Shamal Faily'
 
 def build(objtId,p):
   if (p.__class__.__name__ == 'AttackerParameters'):
@@ -125,8 +123,6 @@ def build(objtId,p):
     return ValueType(objtId,p.name(),p.description(),p.type(),p.score(),p.rationale())
   if (p.__class__.__name__ == 'ClassAssociationParameters'):
     return ClassAssociation(objtId,p.environment(),p.headAsset(),p.headDimension(),p.headNavigation(),p.headType(),p.headMultiplicity(),p.headRole(),p.tailRole(),p.tailMultiplicity(),p.tailType(),p.tailNavigation(),p.tailDimension(),p.tailAsset(),p.rationale())
-  if (p.__class__.__name__ == 'DomainAssociationParameters'):
-    return DomainAssociation(objtId,p.headDomain(),p.tailDomain(),p.phenomena(),p.connectionDomain())
   if (p.__class__.__name__ == 'GoalAssociationParameters'):
     return GoalAssociation(objtId,p.environment(),p.goal(),p.goalDimension(),p.type(),p.subGoal(),p.subGoalDimension(),p.alternative(),p.rationale())
   if (p.__class__.__name__ == 'DependencyParameters'):
@@ -165,8 +161,6 @@ def build(objtId,p):
     return Role(objtId,p.name(),p.type(),p.shortCode(),p.description(),p.environmentProperties())
   if (p.__class__.__name__ == 'ResponsibilityParameters'):
     return Responsibility(objtId,p.name())
-  if (p.__class__.__name__ == 'DomainParameters'):
-    return Domain(objtId,p.name(),p.shortCode(),p.description(),p.type(),p.given(),p.domains())
   if (p.__class__.__name__ == 'ExternalDocumentParameters'):
     return ExternalDocument(objtId,p.name(),p.version(),p.date(),p.authors(),p.description())
   if (p.__class__.__name__ == 'InternalDocumentParameters'):

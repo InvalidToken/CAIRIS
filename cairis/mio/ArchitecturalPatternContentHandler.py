@@ -27,6 +27,8 @@ from cairis.core.TemplateRequirementParameters import TemplateRequirementParamet
 from cairis.core.TemplateGoalParameters import TemplateGoalParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 def a2i(spLabel):
   if spLabel == 'Low':
     return 1
@@ -68,7 +70,7 @@ class ArchitecturalPatternContentHandler(ContentHandler,EntityResolver):
     self.configDir = b.configDir
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/architectural_pattern.dtd'
+    return systemId
 
   def view(self):
     return self.theViewParameters

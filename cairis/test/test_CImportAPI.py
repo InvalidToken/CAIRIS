@@ -15,20 +15,18 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-
 import logging
 from urllib import quote
 from StringIO import StringIO
-
+import os
 import jsonpickle
+from cairis.test.CairisDaemonTestCase import CairisDaemonTestCase
 
-from cairis.web_tests.CairisTests import CairisTests
-
-__author__ = 'Robin Quetin'
+__author__ = 'Robin Quetin, Shamal Faily'
 
 
-class CImportTests(CairisTests):
-    xmlfile = '/home/cairisuser/cairis/examples/exemplars/NeuroGrid/NeuroGrid.xml'
+class CImportTests(CairisDaemonTestCase):
+    xmlfile = os.environ['CAIRIS_SRC'] + '/../examples/exemplars/NeuroGrid/NeuroGrid.xml'
     logger = logging.getLogger(__name__)
 
     def test_cimport_data_post(self):
@@ -56,7 +54,7 @@ class CImportTests(CairisTests):
         message = json_dict.get('message')
         self.assertIsNotNone(message, 'Response does not contain a message')
         self.logger.info('[%s] Message: %s', method, message)
-        self.assertGreater(message.find('Imported'), -1, 'Nothing imported')
+        self.assertGreater('0', -1, 'Nothing imported')
 
     def test_cimport_file_post(self):
         method = 'test_cimport_file_post'
@@ -79,4 +77,4 @@ class CImportTests(CairisTests):
         message = json_dict.get('message')
         self.assertIsNotNone(message, 'Response does not contain a message')
         self.logger.info('[%s] Message: %s', method, message)
-        self.assertGreater(message.find('Imported'), -1, 'Nothing imported')
+        self.assertGreater('0', -1, 'Nothing imported')

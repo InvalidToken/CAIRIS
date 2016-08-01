@@ -36,6 +36,8 @@ from cairis.core.MisuseCase import MisuseCase
 from cairis.core.ClassAssociationParameters import ClassAssociationParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 def a2i(spLabel):
   if spLabel == 'Low':
     return 1
@@ -75,7 +77,7 @@ class RiskAnalysisContentHandler(ContentHandler,EntityResolver):
     self.resetAssociationAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/riskanalysis.dtd'
+    return systemId
 
 
   def associations(self):

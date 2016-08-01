@@ -1,9 +1,24 @@
-import httplib
+#  Licensed to the Apache Software Foundation (ASF) under one
+#  or more contributor license agreements.  See the NOTICE file
+#  distributed with this work for additional information
+#  regarding copyright ownership.  The ASF licenses this file
+#  to you under the Apache License, Version 2.0 (the
+#  "License"); you may not use this file except in compliance
+#  with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
 
+import httplib
 from flask import session, request, make_response
 from flask.ext.restful import Resource
 from flask.ext.restful_swagger import swagger
-
 from cairis.daemon.CairisHTTPError import MalformedJSONHTTPError, ARMHTTPError, ObjectNotFoundHTTPError
 from cairis.data.RiskDAO import RiskDAO
 from cairis.tools.JsonConverter import json_serialize
@@ -54,7 +69,6 @@ class RisksAPI(Resource):
 
         dao = RiskDAO(session_id)
         risks = dao.get_risks(constraint_id)
-
         resp = make_response(json_serialize(risks, session_id=session_id), httplib.OK)
         resp.contenttype = 'application/json'
         return resp
@@ -188,7 +202,6 @@ class RiskByNameAPI(Resource):
     # endregion
     def put(self, name):
         session_id = get_session_id(session, request)
-
         dao = RiskDAO(session_id)
         new_risk = dao.from_json(request)
         dao.update_risk(name, new_risk)
@@ -272,20 +285,21 @@ class RiskAnalysisModelByNameAPI(Resource):
     #endregion
     def get(self, environment):
         session_id = get_session_id(session, request)
+        model_generator = get_model_generator()
         dim_name = request.args.get('dimension_name', '')
         obj_name = request.args.get('object_name', '')
 
         dao = RiskDAO(session_id)
-        dotcode = dao.get_risk_analysis_model(environment, dim_name, obj_name)
-        model_gen = get_model_generator()
-        svg_code = model_gen.generate(dotcode, model_type='risk')
+        dot_code = dao.get_risk_analysis_model(environment, dim_name, obj_name)
+        dao.close()
 
-        accept_header = request.headers.get('accept', 'image/svg+xml')
-        resp = make_response(svg_code, httplib.OK)
-        if accept_header.find('image/svg+xml') or accept_header.find('text/html'):
-            resp.contenttype = 'image/svg+xml'
+        resp = make_response(model_generator.generate(dot_code, model_type='risk'), httplib.OK)
+
+        accept_header = request.headers.get('Accept', 'image/svg+xml')
+        if accept_header.find('text/plain') > -1:
+          resp.headers['Content-type'] = 'text/plain'
         else:
-            resp.contenttype = 'text/plain'
+          resp.headers['Content-type'] = 'image/svg+xml'
         return resp
 
 

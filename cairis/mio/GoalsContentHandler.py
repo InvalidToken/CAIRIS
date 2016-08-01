@@ -28,6 +28,8 @@ from cairis.core.Target import Target
 import cairis.core.RequirementFactory
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 def a2s(aStr):
   if aStr == 'a':
     return '*'
@@ -74,7 +76,7 @@ class GoalsContentHandler(ContentHandler,EntityResolver):
     self.resetCountermeasureAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/goals.dtd'
+    return systemId
 
   def roles(self):
     return self.theRoles

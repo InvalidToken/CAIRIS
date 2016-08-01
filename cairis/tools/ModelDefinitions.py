@@ -29,9 +29,13 @@ from cairis.core.GoalEnvironmentProperties import GoalEnvironmentProperties
 from cairis.core.MisuseCase import MisuseCase
 from cairis.core.MisuseCaseEnvironmentProperties import MisuseCaseEnvironmentProperties
 from cairis.core.MitigateEnvironmentProperties import MitigateEnvironmentProperties
+from cairis.core.Persona import Persona
+from cairis.core.PersonaEnvironmentProperties import PersonaEnvironmentProperties
 from cairis.core.Requirement import Requirement
 from cairis.core.Risk import Risk
 from cairis.core.Role import Role
+from cairis.core.Task import Task
+from cairis.core.TaskEnvironmentProperties import TaskEnvironmentProperties
 from cairis.core.ThreatEnvironmentProperties import ThreatEnvironmentProperties
 from cairis.core.TransferEnvironmentProperties import TransferEnvironmentProperties
 from cairis.core.ValueType import ValueType
@@ -39,11 +43,12 @@ from cairis.core.Vulnerability import Vulnerability
 from cairis.core.VulnerabilityEnvironmentProperties import VulnerabilityEnvironmentProperties
 from cairis.tools.PseudoClasses import EnvironmentTensionModel, SecurityAttribute, ValuedRole, RiskRating
 
-__author__ = 'Robin Quetin'
+__author__ = 'Robin Quetin, Shamal Faily'
 
 obj_id_field = "__python_obj__"
 likelihood_metadata = { "enum": ['Incredible', 'Improbable', 'Remote', 'Occasional', 'Probable', 'Frequent'] }
 severity_metadata = { "enum": ['Negligible', 'Marginal', 'Critical', 'Catastrophic'] }
+
 def gen_class_metadata(class_ref):
     return {
         "enum": [class_ref.__module__+'.'+class_ref.__name__]
@@ -295,11 +300,8 @@ class MisuseCaseEnvironmentPropertiesModel(object):
 class MisuseCaseModel(object):
     resource_fields = {
         obj_id_field: fields.String,
-        "theId": fields.Integer,
         "theName": fields.String,
-        "theThreatName": fields.String,
-        "theRiskName": fields.String,
-        "theVulnerabilityName": fields.String,
+        "theRisk": fields.String,
         "theEnvironmentDictionary": fields.List(fields.Nested(MisuseCaseEnvironmentPropertiesModel.resource_fields)),
         "theEnvironmentProperties": fields.List(fields.Nested(MisuseCaseEnvironmentPropertiesModel.resource_fields))
     }
@@ -428,11 +430,10 @@ class RiskModel(object):
     resource_fields = {
         obj_id_field: fields.String,
         "theVulnerabilityName": fields.String,
-        "theId": fields.Integer,
         "theMisuseCase": fields.Nested(MisuseCaseModel.resource_fields),
         "theTags": fields.List(fields.Nested(fields.String)),
         "theThreatName": fields.String,
-        "theName": fields.String
+        "theRiskName": fields.String
     }
     required = resource_fields.keys()
     required.remove(obj_id_field)
@@ -592,4 +593,90 @@ class VulnerabilityModel(object):
         'theVulnerabilityType' : {
             "enum": ['Configuration', 'Design', 'Implementation']
         }
+    }
+
+class PersonaEnvironmentPropertiesModel(object):
+    resource_fields = {
+        obj_id_field: fields.String,
+        'theDirectFlag': fields.Integer,
+        'theNarrative': fields.String,
+        'theRoles': fields.List(fields.String),
+        'theCodes': fields.List(fields.String)
+    }
+    required = resource_fields.keys()
+    required.remove(obj_id_field)
+    swagger_metadata = {
+        obj_id_field: gen_class_metadata(PersonaEnvironmentProperties)
+    }
+
+@swagger.model
+@swagger.nested(
+    theEnvironmentProperties=PersonaEnvironmentPropertiesModel.__name__
+)
+class PersonaModel(object):
+    resource_fields = {
+        obj_id_field: fields.String,
+        'theEnvironmentDictionary': fields.List(fields.Nested(PersonaEnvironmentPropertiesModel.resource_fields)),
+        'theId': fields.Integer,
+        'theName': fields.String,
+        'theTags': fields.List(fields.String),
+        'theActivities': fields.String,
+        'theAttitudes': fields.String,
+        'theAptitudes': fields.String,
+        'theMotivations': fields.String,
+        'theSkills': fields.String,
+        'theIntrinsic': fields.String,
+        'theContextual': fields.String,
+        'theImage': fields.String,
+        'isAssumption': fields.Integer,
+        'thePersonaType': fields.String,
+        'theEnvironmentProperties': fields.List(fields.Nested(PersonaEnvironmentPropertiesModel.resource_fields)),
+        'theCodes': fields.List(fields.String)
+    }
+    required = resource_fields.keys()
+    required.remove(obj_id_field)
+    required.remove('theEnvironmentDictionary')
+    swagger_metadata = {
+        obj_id_field: gen_class_metadata(Persona)
+    }
+
+class TaskEnvironmentPropertiesModel(object):
+    resource_fields = {
+        obj_id_field: fields.String,
+        'thePersonas': fields.List(fields.String),
+        'theAssets': fields.List(fields.String),
+        'theDependencies': fields.String,
+        'theNarrative': fields.String,
+        'theConsequences': fields.String,
+        'theBenefits': fields.String,
+        'theConcernAssociations': fields.List(fields.String),
+        'theCodes': fields.List(fields.String)
+    }
+    required = resource_fields.keys()
+    required.remove(obj_id_field)
+    swagger_metadata = {
+        obj_id_field: gen_class_metadata(TaskEnvironmentProperties)
+    }
+
+@swagger.nested(
+    theEnvironmentProperties=TaskEnvironmentPropertiesModel.__name__
+)
+class TaskModel(object):
+    resource_fields = {
+        obj_id_field: fields.String,
+        'theEnvironmentDictionary': fields.List(fields.Nested(TaskEnvironmentPropertiesModel.resource_fields)),
+        'theId': fields.Integer,
+        'theName': fields.String,
+        'theShortCode': fields.String,
+        'theObjective': fields.String,
+        'isAssumption': fields.Integer,
+        'theAuthor': fields.String,
+        'theTags': fields.List(fields.String),
+        'theEnvironmentProperties': fields.List(fields.Nested(TaskEnvironmentPropertiesModel.resource_fields))
+    }
+    required = resource_fields.keys()
+    required.remove(obj_id_field)
+    required.remove('theEnvironmentDictionary')
+    swagger_metadata = {
+        obj_id_field: gen_class_metadata(Task)
     }

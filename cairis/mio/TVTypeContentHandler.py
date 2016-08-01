@@ -20,6 +20,8 @@ from xml.sax.handler import ContentHandler,EntityResolver
 from cairis.core.ValueTypeParameters import ValueTypeParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 class TVTypeContentHandler(ContentHandler,EntityResolver):
   def __init__(self):
     self.theVulnerabilityTypes = []
@@ -29,7 +31,7 @@ class TVTypeContentHandler(ContentHandler,EntityResolver):
     self.configDir = b.configDir
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/tvtypes.dtd'
+    return systemId
 
   def types(self):
     return (self.theVulnerabilityTypes,self.theThreatTypes)

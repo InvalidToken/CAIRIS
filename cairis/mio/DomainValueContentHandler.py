@@ -20,6 +20,8 @@ from xml.sax.handler import ContentHandler,EntityResolver
 from cairis.core.ValueTypeParameters import ValueTypeParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 class DomainValueContentHandler(ContentHandler,EntityResolver):
   def __init__(self):
     self.theValuesMap = {}
@@ -35,7 +37,7 @@ class DomainValueContentHandler(ContentHandler,EntityResolver):
     self.resetAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/domainvalues.dtd'
+    return systemId
 
   def values(self):
     return (self.theValuesMap['threat_value'],self.theValuesMap['risk_class'],self.theValuesMap['countermeasure_value'],self.theValuesMap['severity'],self.theValuesMap['likelihood'],self.theValuesMap['capability'],self.theValuesMap['motivation'])

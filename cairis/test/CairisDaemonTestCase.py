@@ -15,24 +15,13 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from time import sleep
+import unittest
+import os
+from subprocess import call
+import cairis.bin.cairisd
 
-import sys
-import gtk
-from NDImplementationDecorator import NDImplementationDecorator
-
-class DomainNodeDialog:
-  def __init__(self,objt,builder):
-    self.window = builder.get_object("DomainNodeDialog")
-    self.decorator = NDImplementationDecorator(builder)
-    self.decorator.updateTextCtrl("domainNameCtrl",objt.name())
-    self.decorator.updateTextCtrl("domainTypeCtrl",objt.type())
-    self.decorator.updateTextCtrl("domainShortCodeCtrl",objt.shortCode())
-    self.decorator.updateMLTextCtrl("domainDescriptionCtrl",objt.description())
-    self.window.resize(350,350)
-
-
-  def on_assetOkButton_clicked(self,callback_data):
-    self.window.destroy()
-
-  def show(self):
-    self.window.show()
+class CairisDaemonTestCase(unittest.TestCase):
+  call([os.environ['CAIRIS_SRC'] + "/test/initdb.sh"])
+  app = cairis.bin.cairisd.main(['-d', '--unit-test'])
+  sleep(1)

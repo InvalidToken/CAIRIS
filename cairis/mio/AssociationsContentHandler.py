@@ -22,6 +22,8 @@ from cairis.core.DependencyParameters import DependencyParameters
 from cairis.core.Borg import Borg
 from cairis.core.ARM import *
 
+__author__ = 'Shamal Faily'
+
 def a2s(aStr):
   if aStr == 'a':
     return '*'
@@ -53,7 +55,7 @@ class AssociationsContentHandler(ContentHandler,EntityResolver):
     self.resetDependencyAssociationAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/associations.dtd'
+    return systemId
 
   def manualAssociations(self):
     return self.theManualAssociations

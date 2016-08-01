@@ -32,6 +32,8 @@ from cairis.core.Steps import Steps
 from cairis.core.Step import Step
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 def a2s(aStr):
   if aStr == 'a':
     return '*'
@@ -86,7 +88,7 @@ class UsabilityContentHandler(ContentHandler,EntityResolver):
     self.resetUseCaseAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/usability.dtd'
+    return systemId
 
   def personas(self):
     return self.thePersonas

@@ -224,6 +224,10 @@ def start():
     api.add_resource(MisuseCaseController.MisuseCasesAPI, '/api/misuse-cases')
     api.add_resource(MisuseCaseController.MisuseCaseByNameAPI, '/api/misuse-cases/risk/<string:risk_name>')
 
+    # Persona routes
+    api.add_resource(PersonaController.PersonasAPI, '/api/personas')
+    api.add_resource(PersonaController.PersonaByNameAPI, '/api/personas/name/<string:name>')
+
     # Project routes
     api.add_resource(ProjectController.ProjectSettingsAPI, '/api/settings')
     api.add_resource(ProjectController.ProjectCreateAPI, '/api/settings/create')
@@ -259,6 +263,11 @@ def start():
     api.add_resource(RoleController.RolesByNameAPI, '/api/roles/name/<string:name>')
     api.add_resource(RoleController.RolesByIdAPI, '/api/roles/id/<int:id>')
     api.add_resource(RoleController.RoleEnvironmentPropertiesAPI, '/api/roles/name/<string:name>/properties')
+
+    # Task routes
+    api.add_resource(TaskController.TasksAPI, '/api/tasks')
+    api.add_resource(TaskController.TaskByNameAPI, '/api/tasks/name/<string:name>')
+    api.add_resource(TaskController.TaskModelByNameAPI, '/api/tasks/model/environment/<string:environment>')
 
     # Threat routes
     api.add_resource(ThreatController.ThreatAPI, '/api/threats')

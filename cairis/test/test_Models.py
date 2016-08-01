@@ -15,24 +15,29 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-
-import sys
-import gtk
-import gtk.glade
+import unittest
 import os
-from DomainNodeDialog import DomainNodeDialog
-
+from cairis.mio.ModelImport import importModelFile
+import cairis.core.BorgFactory
 from cairis.core.Borg import Borg
 
-def build(url):
-  dim,objtName = url.split('#')
-  if (dim == 'domain' or dim == 'designeddomain'):
-    b = Borg()
-    proxy = b.dbProxy
-    builder = gtk.Builder()
-    gladeFile = b.configDir + '/imvnodes/imvnodes.xml'
-    builder.add_from_file(gladeFile)
-    objt = proxy.dimensionObject(objtName,'domain')
-    dlg = DomainNodeDialog(objt,builder)
-    dlg.show()
-    builder.connect_signals(dlg)
+__author__ = 'Shamal Faily'
+
+
+class ModelTests(unittest.TestCase):
+
+  def setUp(self):
+    cairis.core.BorgFactory.initialise()
+    importModelFile(os.environ['CAIRIS_SRC'] + '/../examples/exemplars/NeuroGrid/NeuroGrid.xml',1,'test')
+
+  def testModelCreation(self):
+    b = Borg()  
+    b.get_dbproxy().classModel('Psychosis')
+    b.get_dbproxy().classModel('Psychosis','',True)
+    b.get_dbproxy().goalModel('Psychosis')
+    b.get_dbproxy().responsibilityModel('Psychosis')
+    b.get_dbproxy().obstacleModel('Psychosis')
+    b.get_dbproxy().taskModel('Psychosis')
+    b.get_dbproxy().riskAnalysisModel('Psychosis')
+    b.get_dbproxy().assumptionPersonaModel('Claire')
+

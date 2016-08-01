@@ -22,6 +22,8 @@ import os
 from cairis.core.ARM import *
 from cairis.core.Borg import *
 
+__author__ = 'Shamal Faily'
+
 class DimensionNameDialog(wx.Dialog):
   def __init__(self,parent,dimensionName,dimensions,actionVerb,dialogSize=wx.DefaultSize):
     wx.Dialog.__init__(self,parent,DIMNAME_ID,actionVerb + ' ' + dimensionName,style=wx.DEFAULT_DIALOG_STYLE|wx.MAXIMIZE_BOX|wx.THICK_FRAME|wx.RESIZE_BORDER,size=dialogSize)
@@ -51,6 +53,8 @@ class DimensionNameDialog(wx.Dialog):
     buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
     mainSizer.Add(buttonSizer,0,wx.CENTER)
     actionButton = wx.Button(self,DIMNAME_BUTTONACTION_ID,actionVerb)
+    if len(self.theDimensions) == 0:
+      actionButton.Disable()
     buttonSizer.Add(actionButton)
     cancelButton = wx.Button(self,wx.ID_CANCEL,"Cancel")
     buttonSizer.Add(cancelButton)

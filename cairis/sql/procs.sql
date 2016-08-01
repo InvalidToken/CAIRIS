@@ -850,6 +850,7 @@ drop procedure if exists delete_locations;
 drop procedure if exists locationsNames;
 drop procedure if exists locationsRiskModel;
 drop procedure if exists architecturalPatternToXml;
+drop procedure if exists templateAssetMetrics;
 
 
 delimiter //
@@ -7417,7 +7418,7 @@ begin
   declare responseId int default -1;
   declare preScore int;
   declare postScore int;
-  declare detailsBuf varchar(1000);
+  declare detailsBuf text;
   declare responseCursor cursor for select distinct id,name from response where risk_id = riskId;
   declare continue handler for not found set done = 1;
 
@@ -7435,7 +7436,7 @@ begin
   select id into threatLikelihood from likelihood where name = likelihoodName;
   select id into vulSeverity from severity where name = severityName;
   drop table if exists temp_riskscore;
-  create temporary table temp_riskscore (response_name varchar(50),preScore int, postScore int, details varchar(1000));
+  create temporary table temp_riskscore (response_name varchar(50),preScore int, postScore int, details varchar(300));
 
   if riskName != ''
   then
@@ -7466,7 +7467,7 @@ end
 //
 
 
-create procedure calculateRiskScore(in threatId int, in vulId int, in threatLikelihood int, in vulSeverity int, in envId int, in responseId int, out preScore int, out postScore int, out detailsBuf varchar(1000))
+create procedure calculateRiskScore(in threatId int, in vulId int, in threatLikelihood int, in vulSeverity int, in envId int, in responseId int, out preScore int, out postScore int, out detailsBuf text)
 begin
   declare likelihood int default 0;
   declare severity int default 0;
@@ -7528,8 +7529,8 @@ begin
   declare riskPanValue int default 0;
   declare riskUnlValue int default 0;
   declare riskUnoValue int default 0;
-  declare msComments varchar(1000) default '';
-  declare mlComments varchar(1000) default '';
+  declare msComments text default '';
+  declare mlComments text default '';
   if responseId != -1
   then
     call mitigatingValues(responseId,envId);
@@ -7715,28 +7716,6 @@ begin
       select id into envId from environment where name = assetName;
       select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name,rm.name from requirement o, environment_requirement rmr, environment rm, requirement_type rt where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = rmr.requirement_id and rmr.environment_id = envId and rmr.environment_id = rm.id order by o.label;
     end if;
-  end if;
-end
-//
-
-create procedure getRequirement(in reqName text)
-begin
-  declare reqLabel int;
-  declare reqId int;
-  declare shortCode varchar(10);
-
-  select o.id into reqId from requirement o where o.name = reqName and o.version = (select max(i.version) from requirement i where i.id = o.id);
-  if reqId is null
-  then
-    call requirementLabelComponents(reqName,shortCode,reqLabel);
-    select o.id into reqId from requirement o, asset_requirement ar, asset a where o.label = reqLabel and o.id = ar.requirement_id and ar.asset_id = a.id and a.short_code = shortCode and o.version = (select max(i.version) from requirement i where i.id = o.id);
-    if reqId is null
-    then
-      select o.id into reqId from requirement o, environment_requirement ar, environment a where o.label = reqLabel and o.id = ar.requirement_id and ar.environment_id = a.id and a.short_code = shortCode and o.version = (select max(i.version) from requirement i where i.id = o.id);
-    end if;
-    select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name from requirement o, requirement_type rt where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId order by o.label;
-  else
-    select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name from requirement o, requirement_type rt where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId order by o.label;
   end if;
 end
 //
@@ -22493,6 +22472,53 @@ begin
   close connCursor;
   set buf = concat(buf,'\n</architectural_pattern>');
   select buf;
+end
+//
+
+create procedure templateAssetMetrics(in taName text)
+begin
+  declare taId int;
+
+  select id into taId from template_asset where name = taName limit 1;
+  select st.value,ar.value from template_asset ta, surface_type st, access_right ar where ta.id = taId and ta.surface_type_id = st.id and ta.access_right_id = ar.id limit 1;
+end
+//
+
+create procedure getRequirement(in reqName text)
+begin
+  declare reqLabel int;
+  declare reqId int;
+  declare shortCode varchar(10);
+  declare dimId int;
+
+  select o.id into reqId from requirement o where o.name = reqName and o.version = (select max(i.version) from requirement i where i.id = o.id);
+  if reqId is null
+  then
+    call requirementLabelComponents(reqName,shortCode,reqLabel);
+    select o.id into reqId from requirement o, asset_requirement ar, asset a where o.label = reqLabel and o.id = ar.requirement_id and ar.asset_id = a.id and a.short_code = shortCode and o.version = (select max(i.version) from requirement i where i.id = o.id);
+    if reqId is null
+    then
+      select o.id into reqId from requirement o, environment_requirement ar, environment a where o.label = reqLabel and o.id = ar.requirement_id and ar.environment_id = a.id and a.short_code = shortCode and o.version = (select max(i.version) from requirement i where i.id = o.id);
+    end if; 
+
+    select id into dimId from asset where short_code = shortCode;
+    if dimId is null
+    then
+      select id into dimId from environment where short_code = shortCode;
+      select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name,rm.name from requirement o, requirement_type rt, environment_requirement rmr, environment rm where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId and o.id = rmr.requirement_id and rmr.environment_id = rm.id order by o.label; 
+    else
+      select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name,rm.name from requirement o, requirement_type rt, asset_requirement rmr, asset rm where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId and o.id = rmr.requirement_id and rmr.asset_id = rm.id order by o.label; 
+    end if; 
+  else
+    select asset_id into dimId from asset_requirement where requirement_id = reqId;
+    if dimId is null
+    then
+      select environment_id into dimId from environment_requirement where requirement_id = reqId;
+      select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name,rm.name from requirement o, requirement_type rt, environment_requirement rmr, environment rm where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId and o.id = rmr.requirement_id and rmr.environment_id = rm.id order by o.label;
+    else
+      select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name,rm.name from requirement o, requirement_type rt, asset_requirement rmr, asset rm where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId and o.id = rmr.requirement_id and rmr.asset_id = rm.id order by o.label;
+    end if; 
+  end if; 
 end
 //
 

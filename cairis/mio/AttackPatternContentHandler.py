@@ -34,6 +34,8 @@ from cairis.core.ObstacleEnvironmentProperties import ObstacleEnvironmentPropert
 from cairis.core.GoalAssociationParameters import GoalAssociationParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 def a2i(spLabel):
   if spLabel == 'Low':
     return 1
@@ -134,7 +136,7 @@ class AttackPatternContentHandler(ContentHandler,EntityResolver):
     self.theResponsibilities = []
      
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/attack_pattern.dtd'
+    return systemId
 
   def startElement(self,name,attrs):
     if (name == 'attack_pattern'):

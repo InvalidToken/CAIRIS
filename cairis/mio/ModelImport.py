@@ -35,6 +35,8 @@ from cairis.core.Borg import Borg
 import xml.sax
 from cairis.core.ARM import *
 
+__author__ = 'Shamal Faily'
+
 def importSecurityPatterns(importFile,session_id=None):
   try:
     parser = xml.sax.make_parser()
@@ -84,9 +86,9 @@ def importAttackPattern(importFile,session_id = None):
     vulnerability = handler.vulnerability()
     threat = handler.threat()
     risk = handler.risk()
-    raTxt = importRiskAnalysis([],assets,[vulnerability],attackers,[threat],[risk],[],[])
-    obsTxt = importRequirements([],[],handler.obstacles(),[],[])
-    assocTxt = importAssociations([],handler.obstacleAssociations(),[])
+    raTxt = importRiskAnalysis([],assets,[vulnerability],attackers,[threat],[risk],[],[],session_id)
+    obsTxt = importRequirements([],[],handler.obstacles(),[],[],session_id)
+    assocTxt = importAssociations([],handler.obstacleAssociations(),[],session_id)
     return obsTxt + assocTxt + raTxt
   except xml.sax.SAXException, e:
     raise ARMException("Error parsing" + importFile + ": " + e.getMessage())
@@ -132,7 +134,7 @@ def importDirectoryFile(importFile,isOverwrite=1,session_id = None):
     vdSize = len(vulDir)
     tdSize = len(threatDir)
     b = Borg()
-    db_proxy = b.get_proxy(session_id)
+    db_proxy = b.get_dbproxy(session_id)
     if (vdSize > 0):
       db_proxy.addVulnerabilityDirectory(vulDir,isOverwrite)
     if (tdSize > 0):
@@ -705,7 +707,7 @@ def importModelFile(importFile,isOverwrite = 1,session_id = None):
     modelTxt = ''
     if isOverwrite == 1:
       db_proxy.clearDatabase(session_id)
-      modelTxt += importTVTypeFile(importFile,session_id = session_id) + '  '
+      modelTxt += importTVTypeFile(importFile,isOverwrite,session_id = session_id) + '  '
     modelTxt += importDomainValuesFile(importFile,session_id) + ' '
     modelTxt += importProjectFile(importFile,session_id) + ' '
     modelTxt += importRiskAnalysisFile(importFile,session_id) + ' '

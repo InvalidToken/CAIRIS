@@ -20,6 +20,8 @@ import argparse
 import os
 import sys
 
+__author__ = 'Shamal Faily'
+
 def main(args=None):
   parser = argparse.ArgumentParser(description='Computer Aided Integration of Requirements and Information Security - Model Import')
   parser.add_argument('modelFile',help='model file to import')
@@ -82,6 +84,7 @@ def file_import(importFile,mFormat,overwriteFlag,session_id = None):
     msgStr += importModelFile(importFile,int(overwriteFlag),session_id)
   else:
     raise ARMException('Input model type ' + mFormat + ' not recognised')
+  return 0
 
 if __name__ == '__main__':
   try:

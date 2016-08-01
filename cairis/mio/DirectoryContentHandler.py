@@ -20,6 +20,8 @@ from xml.sax.handler import ContentHandler,EntityResolver
 from cairis.core.ValueTypeParameters import ValueTypeParameters
 from cairis.core.Borg import Borg
 
+__author__ = 'Shamal Faily'
+
 class DirectoryContentHandler(ContentHandler,EntityResolver):
   def __init__(self):
     self.theVulnerabilityDirectory = []
@@ -29,7 +31,7 @@ class DirectoryContentHandler(ContentHandler,EntityResolver):
     self.resetAttributes()
 
   def resolveEntity(self,publicId,systemId):
-    return self.configDir + '/directory.dtd'
+    return systemId
 
   def directories(self):
     return (self.theVulnerabilityDirectory,self.theThreatDirectory)
