@@ -20,9 +20,9 @@ import os
 import httplib
 
 from flask import Flask, make_response, request, send_from_directory
-from flask.ext.cors import CORS
-from flask.ext.restful import Api
-from flask.ext.restful_swagger import swagger
+from flask_cors import CORS
+from flask_restful import Api
+from flask_restful_swagger import swagger
 
 from cairis.core.Borg import Borg
 from CairisHTTPError import CairisHTTPError, ARMHTTPError

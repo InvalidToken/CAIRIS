@@ -2,9 +2,9 @@ import httplib
 import logging
 import sys
 import MySQLdb
-from flask.ext.restful_swagger import swagger
+from flask_restful_swagger import swagger
 from flask import request, make_response, session
-from flask.ext.restful import Resource
+from flask_restful import Resource
 from jsonpickle import encode
 
 from cairis.core.Borg import Borg
