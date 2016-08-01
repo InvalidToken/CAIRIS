@@ -79,8 +79,8 @@ def handle_user_login_form():
         }
         
         s = verify_login(conf)
-        import pdb
-        pdb.set_trace()
+        print session_id
+        print id
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
             'Successfully Logged In',
