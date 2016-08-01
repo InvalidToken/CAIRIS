@@ -9,6 +9,7 @@ from jsonpickle import encode
 
 from cairis.core.Borg import Borg
 from cairis.daemon.CairisHTTPError import MissingParameterHTTPError, MalformedJSONHTTPError
+from werkzeug.security import generate_password_hash, check_password_hash
 from cairis.core.BorgFactory import parseConfigFile
 from cairis.tools.ModelDefinitions import UserLoginModel
 from cairis.tools.SessionValidator import validate_proxy, get_logger
@@ -16,13 +17,13 @@ from cairis.tools.SessionValidator import validate_proxy, get_logger
 
 __author__ = 'Robin Quetin'
 
+
 def set_dbproxy():
     b = Borg()
     setting = parseConfigFile()
     db_proxy = validate_proxy(None, -1, conf=setting)
     pSettings = db_proxy.getProjectSettings()
     id = b.init_settings()
-    print id
     db_proxy.close()
     session['session_id'] = id
     b.settings[id]['dbProxy'] = db_proxy
@@ -47,7 +48,9 @@ def verify_login(conf):
     if cur.fetchone()[0]:
         cur.execute("SELECT password FROM users WHERE username = %s;", [conf['username']])
         for row in cur.fetchall():
-            if (conf['password'] == row[0]):
+            pwd_hash = row[0].replace("'", "").strip()
+            #if (check_password_hash(pwd_hash, conf['password'])):
+            if (conf['password'] == pwd_hash):
                 proxy = set_dbproxy()
                 print proxy
                 return proxy;
@@ -76,7 +79,7 @@ def handle_user_login_form():
             'jsonPrettyPrint': dict_form.get('jsonPrettyPrint', False) == 'on'
         }
         
-        s = verify_login()
+        s = verify_login(conf)
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
             'Successfully Logged In',
@@ -128,6 +131,7 @@ class UserLoginAPI(Resource):
             b.logger.info(dict_form)
             s = verify_login(dict_form)
 
+            
             resp_dict = {'session_id': s['session_id'], 'message': 'Configuration successfully applied'}
             resp = make_response(encode(resp_dict), httplib.OK)
             resp.headers['Content-type'] = 'application/json'
