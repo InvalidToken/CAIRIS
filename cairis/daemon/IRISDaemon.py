@@ -29,8 +29,8 @@ from CairisHTTPError import CairisHTTPError, ARMHTTPError
 from cairis.core.ARM import ARMException, DatabaseProxyException
 from cairis.controllers import AssetController, AttackerController, CImportController, DependencyController, \
     DimensionController, EnvironmentController, GoalController, LoginController, MisuseCaseController, \
-    ProjectController, RequirementController, ResponseController, RiskController, RoleController, \
-    ThreatController, UploadController, VulnerabilityController
+    PersonaController, ProjectController, RequirementController, ResponseController, RiskController, RoleController, \
+    TaskController, ThreatController, UploadController, VulnerabilityController
 
 __author__ = 'Robin Quetin'
 ''' This module uses Flask (tested using 0.10) & Flask-Restful (tested using 0.3.3) '''
