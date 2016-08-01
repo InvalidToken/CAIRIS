@@ -518,7 +518,7 @@ class ThreatModel(object):
 @swagger.model
 class UserLoginModel(object):
     resource_fields = {
-        "user": fields.String,
+        "username": fields.String,
         "password": fields.String,
        	"jsonPrettyPrint": fields.String
     }

@@ -101,7 +101,7 @@ def validate_proxy(session, id, request=None, conf=None):
     if conf is not None:
         if isinstance(conf, dict):
             try:
-                db_proxy = MySQLDatabaseProxy(host=conf['host'], port=conf['port'], user=conf['user'], passwd=conf['passwd'], db=conf['db'])
+                db_proxy = MySQLDatabaseProxy(host=conf['dbhost'], port=conf['dbport'], user=conf['dbuser'], passwd=conf['dbpasswd'], db=conf['dbname'])
                 if db_proxy is not None:
                     return db_proxy
                 else:

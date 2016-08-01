@@ -32,7 +32,7 @@ __author__ = 'Robin Quetin'
 class RiskTests(CairisTests):
     # region Class fields
     logger = logging.getLogger(__name__)
-    existing_risk_id = 167
+    existing_risk_id = 159
     existing_risk_name = 'Unauthorised Certificate Access'
     existing_environment_name = 'Stroke'
     existing_threat_name = 'Trojan Horse'

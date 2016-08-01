@@ -1,6 +1,7 @@
 import httplib
 import logging
 import sys
+import MySQLdb
 from flask.ext.restful_swagger import swagger
 from flask import request, make_response, session
 from flask.ext.restful import Resource
@@ -15,36 +16,52 @@ from cairis.tools.SessionValidator import validate_proxy, get_logger
 
 __author__ = 'Robin Quetin'
 
-
-def set_dbproxy(conf):
+def set_dbproxy():
     b = Borg()
     setting = parseConfigFile()
-    conf['user'] = conf['username']
-    conf['passwd'] = conf['password']
-    conf['host'] = setting['dbhost']
-    conf['port'] = setting['dbport']
-    conf['db'] = setting['dbname']
-    db_proxy = validate_proxy(None, -1, conf=conf)
+    db_proxy = validate_proxy(None, -1, conf=setting)
     pSettings = db_proxy.getProjectSettings()
     id = b.init_settings()
+    print id
     db_proxy.close()
     session['session_id'] = id
     b.settings[id]['dbProxy'] = db_proxy
-    b.settings[id]['dbUser'] = conf['user']
-    b.settings[id]['dbPasswd'] = conf['passwd']
-    b.settings[id]['dbHost'] = conf['host']
-    b.settings[id]['dbPort'] = conf['port']
-    b.settings[id]['dbName'] = conf['db']
+    b.settings[id]['dbUser'] = setting['dbuser']
+    b.settings[id]['dbPasswd'] = setting['dbpasswd']
+    b.settings[id]['dbHost'] = setting['dbhost']
+    b.settings[id]['dbPort'] = setting['dbport']
+    b.settings[id]['dbName'] = setting['dbname']
     b.settings[id]['fontSize'] = pSettings['Font Size']
     b.settings[id]['apFontSize'] = pSettings['AP Font Size']
     b.settings[id]['fontName'] = pSettings['Font Name']
-    b.settings[id]['jsonPrettyPrint'] = conf.get('jsonPrettyPrint', False)
+    b.settings[id]['jsonPrettyPrint'] = setting.get('jsonPrettyPrint', False)
 
-    return b.settings[id]
+    return b.settings['id']
+
+
+def verify_login(conf):
+    setting = parseConfigFile()
+    db = MySQLdb.connect(host=setting['dbhost'], user=setting['dbuser'], passwd=setting['dbpasswd'], db=setting['dbname'])
+    cur = db.cursor()
+    cur.execute("SELECT COUNT(1) FROM users WHERE username = %s;", [conf['username']])
+    if cur.fetchone()[0]:
+        cur.execute("SELECT password FROM users WHERE username = %s;", [conf['username']])
+        for row in cur.fetchall():
+            if (conf['password'] == row[0]):
+                proxy = set_dbproxy()
+                print proxy
+                return proxy;
+            else:
+                print "Password Error"
+    else:
+        print "Username Error"
+
+
+
 
 def serve_user_login_form():
     b = Borg()
-    resp = make_response(b.template_generator.serve_result('user_config', action_url=request.full_path), httplib.OK)
+    resp = make_response(b.template_generator.serve_result('user_login', action_url=request.full_path), httplib.OK)
     resp.headers['Content-type'] = 'text/html'
     resp.headers['Access-Control-Allow-Origin'] = "*"
     return resp
@@ -58,10 +75,11 @@ def handle_user_login_form():
             'password': dict_form['password'],
             'jsonPrettyPrint': dict_form.get('jsonPrettyPrint', False) == 'on'
         }
-        s = set_dbproxy(conf)
+        
+        s = verify_login()
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
-            'Configuration successfully updated',
+            'Successfully Logged In',
             json_serialize(s, session_id=s['session_id']))'''
 
         resp = make_response(debug + 'session_id={0}'.format(s['session_id']), httplib.OK)
@@ -108,7 +126,7 @@ class UserLoginAPI(Resource):
                 raise MalformedJSONHTTPError(data=request.get_data())
 
             b.logger.info(dict_form)
-            s = set_dbproxy(dict_form)
+            s = verify_login(dict_form)
 
             resp_dict = {'session_id': s['session_id'], 'message': 'Configuration successfully applied'}
             resp = make_response(encode(resp_dict), httplib.OK)
