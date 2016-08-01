@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Configuration | CAIRIS</title>
+    <title>Login | CAIRIS</title>
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
     <!-- Bootstrap 3.3.2 -->
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
