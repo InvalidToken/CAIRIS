@@ -851,6 +851,7 @@ drop procedure if exists locationsNames;
 drop procedure if exists locationsRiskModel;
 drop procedure if exists architecturalPatternToXml;
 drop procedure if exists templateAssetMetrics;
+drop procedure if exists grepUser;
 
 
 delimiter //
@@ -22519,6 +22520,12 @@ begin
       select o.label,o.id,o.name,o.description,o.priority,o.rationale,o.fit_criterion,o.originator,o.version,rt.name,rm.name from requirement o, requirement_type rt, asset_requirement rmr, asset rm where o.version = (select max(i.version) from requirement i where i.id = o.id) and o.type = rt.id and o.id = reqId and o.id = rmr.requirement_id and rmr.asset_id = rm.id order by o.label;
     end if; 
   end if; 
+end
+//
+
+create procedure grepUser(in name text)
+begin
+  select password from users where username = name;
 end
 //
 

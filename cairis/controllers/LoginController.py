@@ -13,7 +13,7 @@ from cairis.daemon.CairisHTTPError import MissingParameterHTTPError, MalformedJS
 from werkzeug.security import generate_password_hash, check_password_hash
 from cairis.core.BorgFactory import parseConfigFile
 from cairis.tools.ModelDefinitions import UserLoginModel
-from cairis.tools.SessionValidator import validate_proxy, get_logger
+from cairis.tools.SessionValidator import get_session_id, validate_proxy, get_logger
 
 
 __author__ = 'Robin Quetin'
@@ -26,6 +26,7 @@ def set_dbproxy():
     pSettings = db_proxy.getProjectSettings()
     id = b.init_settings()
     db_proxy.close()
+
     session['session_id'] = id
     b.settings[id]['dbProxy'] = db_proxy
     b.settings[id]['dbUser'] = setting['dbuser']
@@ -37,10 +38,9 @@ def set_dbproxy():
     b.settings[id]['apFontSize'] = pSettings['AP Font Size']
     b.settings[id]['fontName'] = pSettings['Font Name']
     b.settings[id]['jsonPrettyPrint'] = setting.get('jsonPrettyPrint', False)
+    return b.settings[id]
 
-    return b.settings['id']
-
-
+'''
 def verify_login(conf):
     setting = parseConfigFile()
     db = MySQLdb.connect(host=setting['dbhost'], user=setting['dbuser'], passwd=setting['dbpasswd'], db=setting['dbname'])
@@ -58,7 +58,29 @@ def verify_login(conf):
                 print "Password Error"
     else:
         print "Username Error"
+'''
 
+def verify_login(conf):
+    pytest.set_trace()
+    b = Borg()
+    session_id = get_session_id(session, request)
+    setting = parseConfigFile()
+    username = conf['username']
+    searchResults = b.get_dbproxy(session_id)
+    searchResults.searchUser(username=username)
+    print searchResults
+    if cur.fetchone()[0]:
+        cur.execute("SELECT password FROM users WHERE username = %s;", [conf['username']])
+        for row in cur.fetchall():
+            pwd_hash = row[0].replace("'", "").strip()
+            #if (check_password_hash(pwd_hash, conf['password'])): <- Use Once passwords are hashed, (can be done using generate_password_hash)
+            if (conf['password'] == pwd_hash):
+                proxy = set_dbproxy()
+                return proxy;
+            else:
+                print "Password Error"
+    else:
+        print "Username Error"
 
 
 
@@ -77,14 +99,11 @@ def handle_user_login_form():
             'password': dict_form['password'],
             'jsonPrettyPrint': dict_form.get('jsonPrettyPrint', False) == 'on'
         }
-        
         s = verify_login(conf)
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
             'Successfully Logged In',
             json_serialize(s, session_id=s['session_id']))'''
-        print "Debug Information"
-        print debug
         resp = make_response(debug + 'session_id={0}'.format(s['session_id']), httplib.OK)
         resp.headers['Content-type'] = 'text/plain'
         resp.headers['Access-Control-Allow-Origin'] = "*"

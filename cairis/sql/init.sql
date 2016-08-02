@@ -358,6 +358,7 @@ DROP TABLE IF EXISTS security_property_value;
 DROP TABLE IF EXISTS securityusability_property_value;
 DROP TABLE IF EXISTS countermeasure_value;
 DROP TABLE IF EXISTS threat_value;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE trace_dimension(
   id INT NOT NULL,
@@ -3238,6 +3239,14 @@ CREATE TABLE persona_instance (
   FOREIGN KEY(persona_id) REFERENCES persona(id),
   FOREIGN KEY(location_id) REFERENCES location(id)
 ) ENGINE=INNODB;
+
+CREATE TABLE users (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL,
+  password VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE `username_index` (`username`)
+) ENGINE = InnoDB;
 
 delimiter //
 

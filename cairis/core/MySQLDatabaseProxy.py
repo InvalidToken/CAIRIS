@@ -11656,4 +11656,26 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     except _mysql_exceptions.DatabaseError, e:
       id,msg = e
       exceptionText = 'MySQL error getting metrics for template asset ' + taName + ' (id:' + str(id) + ',message:' + msg
-      raise DatabaseProxyException(exceptionText) 
+      raise DatabaseProxyException(exceptionText)
+
+  def searchUser(self, username):
+    try:
+      curs = self.conn.cursor()
+      curs.execute('call grepUser(%s)', [username])
+      if (curs.rowcount == -1):
+        exceptionText = 'Error getting login from database' + username
+        raise DatabaseProxyException(exceptionText)
+      elif (curs.rowcount == 0):
+        exceptionText = 'User not found in database' + username
+        raise DatabaseProxyException(exceptionText)
+      elif (curs.rowcount > 1):
+        excepttionText = 'Too many users with this username found, please report this to the administrator' + username
+        raise DatabaseProxyException(exceptionText)
+      row = curs.fetchone()
+      password = row[0]
+      curs.close()
+      return password
+    except _mysql_exceptions.DatabaseError, e:
+      id,msg = e
+      exceptionText = 'MySQL error for getting user details from database ' + username + ' (id:' + str(id) + ',message:' + msg
+      raise DatabaseProxyException(exceptionText)
