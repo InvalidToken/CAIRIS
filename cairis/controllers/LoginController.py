@@ -2,6 +2,7 @@ import httplib
 import logging
 import sys
 import MySQLdb
+import pytest
 from flask_restful_swagger import swagger
 from flask import request, make_response, session
 from flask_restful import Resource
@@ -52,7 +53,6 @@ def verify_login(conf):
             #if (check_password_hash(pwd_hash, conf['password'])):
             if (conf['password'] == pwd_hash):
                 proxy = set_dbproxy()
-                print proxy
                 return proxy;
             else:
                 print "Password Error"
@@ -79,13 +79,12 @@ def handle_user_login_form():
         }
         
         s = verify_login(conf)
-        print session_id
-        print id
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
             'Successfully Logged In',
             json_serialize(s, session_id=s['session_id']))'''
-
+        print "Debug Information"
+        print debug
         resp = make_response(debug + 'session_id={0}'.format(s['session_id']), httplib.OK)
         resp.headers['Content-type'] = 'text/plain'
         resp.headers['Access-Control-Allow-Origin'] = "*"
@@ -125,16 +124,12 @@ class UserLoginAPI(Resource):
         try:
             b = Borg()
             dict_form = request.get_json(silent=True)
-            print "POSTING"
-            print request.get_json
-            print dict_form
 
             if dict_form is False or dict_form is None:
                 raise MalformedJSONHTTPError(data=request.get_data())
-
+            
             b.logger.info(dict_form)
             s = verify_login(dict_form)
-
             
             resp_dict = {'session_id': s['session_id'], 'message': 'Configuration successfully applied'}
             resp = make_response(encode(resp_dict), httplib.OK)
