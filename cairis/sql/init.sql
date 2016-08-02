@@ -3997,3 +3997,4 @@ insert into relationship_type (id,name) values(2,'conflict');
 insert into relationship_type (id,name) values(3,'part-of');
 insert into code_type (id,name) values (0,'event');
 insert into code_type (id,name) values (1,'context');
+insert into users values(1,'cairis','cairis123');

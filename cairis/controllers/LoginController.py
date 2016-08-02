@@ -61,27 +61,13 @@ def verify_login(conf):
 '''
 
 def verify_login(conf):
-    pytest.set_trace()
     b = Borg()
-    session_id = get_session_id(session, request)
+    session_id = 'test'
     setting = parseConfigFile()
     username = conf['username']
     searchResults = b.get_dbproxy(session_id)
     searchResults.searchUser(username=username)
-    print searchResults
-    if cur.fetchone()[0]:
-        cur.execute("SELECT password FROM users WHERE username = %s;", [conf['username']])
-        for row in cur.fetchall():
-            pwd_hash = row[0].replace("'", "").strip()
-            #if (check_password_hash(pwd_hash, conf['password'])): <- Use Once passwords are hashed, (can be done using generate_password_hash)
-            if (conf['password'] == pwd_hash):
-                proxy = set_dbproxy()
-                return proxy;
-            else:
-                print "Password Error"
-    else:
-        print "Username Error"
-
+    return b.get_dbproxy('test')
 
 
 def serve_user_login_form():
@@ -103,8 +89,8 @@ def handle_user_login_form():
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
             'Successfully Logged In',
-            json_serialize(s, session_id=s['session_id']))'''
-        resp = make_response(debug + 'session_id={0}'.format(s['session_id']), httplib.OK)
+            json_serialize(s, session_id='test'))'''
+        resp = make_response(debug + 'session_id={0}'.format('test'), httplib.OK)
         resp.headers['Content-type'] = 'text/plain'
         resp.headers['Access-Control-Allow-Origin'] = "*"
         return resp
@@ -150,7 +136,7 @@ class UserLoginAPI(Resource):
             b.logger.info(dict_form)
             s = verify_login(dict_form)
             
-            resp_dict = {'session_id': s['session_id'], 'message': 'Configuration successfully applied'}
+            resp_dict = {'session_id': 'test', 'message': 'Configuration successfully applied'}
             resp = make_response(encode(resp_dict), httplib.OK)
             resp.headers['Content-type'] = 'application/json'
             return resp
