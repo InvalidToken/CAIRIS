@@ -61,26 +61,14 @@ def verify_login(conf):
 '''
 
 def verify_login(conf):
-    pytest.set_trace()
     b = Borg()
-    session_id = get_session_id(session, request)
-    setting = parseConfigFile()
-    username = conf['username']
-    searchResults = b.get_dbproxy(session_id)
-    searchResults.searchUser(username=username)
+    setting = parseConfigFile()    
+    proxy = set_dbproxy()
+    self.dbProxy = b.dbProxy
+    searchResults = b.get_dbproxy('test')
+    searchResults.searchUser(conf['username'])
     print searchResults
-    if cur.fetchone()[0]:
-        cur.execute("SELECT password FROM users WHERE username = %s;", [conf['username']])
-        for row in cur.fetchall():
-            pwd_hash = row[0].replace("'", "").strip()
-            #if (check_password_hash(pwd_hash, conf['password'])): <- Use Once passwords are hashed, (can be done using generate_password_hash)
-            if (conf['password'] == pwd_hash):
-                proxy = set_dbproxy()
-                return proxy;
-            else:
-                print "Password Error"
-    else:
-        print "Username Error"
+    return proxy
 
 
 

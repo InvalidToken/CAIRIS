@@ -17,6 +17,7 @@
 
 
 from Borg import Borg
+import pytest
 import MySQLdb
 import RequirementFactory
 from Environment import Environment
@@ -11660,6 +11661,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def searchUser(self, username):
     try:
+      pytest.set_trace()
       curs = self.conn.cursor()
       curs.execute('call grepUser(%s)', [username])
       if (curs.rowcount == -1):
@@ -11676,6 +11678,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       curs.close()
       return password
     except _mysql_exceptions.DatabaseError, e:
-      id,msg = e
+      id, msg = e
       exceptionText = 'MySQL error for getting user details from database ' + username + ' (id:' + str(id) + ',message:' + msg
+      print exceptionText
       raise DatabaseProxyException(exceptionText)
