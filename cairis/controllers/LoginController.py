@@ -54,10 +54,10 @@ def verify_login(conf):
             if (conf['password'] == pwd_hash):  
                 return proxy
             else:
-                proxy['error'] = "Password Error"             
+                proxy['error'] = "Login Error"             
                 return proxy
     else:
-        proxy['error'] = "Username Error"
+        proxy['error'] = "Login Error"
         return proxy
 '''
 def verify_login(conf):
@@ -95,9 +95,7 @@ def handle_user_login_form():
             'Successfully Logged In',
             json_serialize(s, session_id='test'))'''            
         if s.has_key('error'):           
-            if (s['error'] == "Password Error"):
-                resp = make_response(debug + 'session_id={0}'.format(s['error']), httplib.OK)
-            elif (s['error'] == "Username Error"):
+            if (s['error'] == "Login Error"):
                 resp = make_response(debug + 'session_id={0}'.format(s['error']), httplib.OK)
         else:
             resp = make_response(debug + 'session_id={0}'.format(s['session_id']), httplib.OK)
