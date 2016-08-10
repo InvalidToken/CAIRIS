@@ -20,8 +20,9 @@ from re import sub as substitute
 from subprocess import check_output as cmd
 from tempfile import mkstemp as make_tempfile
 from xml.dom import minidom
+from cairis.core.Borg import Borg
 
-__author__ = 'Robin Quetin'
+__author__ = 'Robin Quetin, Shamal Faily'
 
 
 class SVGGenerator(object):
@@ -56,7 +57,7 @@ class SVGGenerator(object):
         lines = output.split('\n')
         svg_start = -1
         is_node = False
-
+        b = Borg()
         for i in range(len(lines)):
             line = lines[i]
             if svg_start == -1:
@@ -66,6 +67,7 @@ class SVGGenerator(object):
             if line.find('class="node"') > -1:
                 is_node = True
 
+            line = substitute(b.staticDir,"",line)
             line = substitute("<!--.*?-->", "", line)
             if line.find('fill="none"') > -1 and is_node:
                 line = line.replace('fill="none"', 'fill="white"')
@@ -102,7 +104,10 @@ def correctHref(line, model_type):
             if (model_type == 'goal' or model_type == 'risk') and type == 'requirement':
                 new_link = '/api/{0}s/shortcode/{1}'.format(type, object)
             else:
-                new_link = '/api/{0}s/name/{1}'.format(type, object)
+                if type == 'grounds': 
+                  new_link = '/api/{0}/name/{1}'.format(type, object)
+                else:
+                  new_link = '/api/{0}s/name/{1}'.format(type, object)
             line = line.replace(old_link, new_link)
 
         href_exists = line.find('<a xlink:href="', href_exists+1)

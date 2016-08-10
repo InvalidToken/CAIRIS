@@ -94,9 +94,7 @@ function hideLoading(){
     $(".loadingWrapper").fadeOut(500);
 }
 
-/*
-Filling the asset environment in the HTML
- */
+// Filling the asset environment in the HTML
 function fillEditAssetsEnvironment(){
     var data = JSON.parse( $.session.get("AssetProperties"));
     var i = 0;
@@ -108,7 +106,6 @@ function fillEditAssetsEnvironment(){
     });
     $('#theEnvironmentDictionary').find("tbody").empty();
     $('#theEnvironmentDictionary').append(textToInsert.join(''));
-    // $(".clickable-environments").contextMenu(menu);
 
     var env = $( "#theEnvironmentDictionary").find("tbody tr:eq(0) > td:eq(0)").text();
 
@@ -118,18 +115,13 @@ function fillEditAssetsEnvironment(){
             getAssetDefinition(group.attributes);
             //props = group.attributes;
             $.session.set("thePropObject", JSON.stringify(group));
-
            // $.session.set("Arrayindex",arrayID);
-
         }
     });
     $("#theEnvironmentDictionary").find(".assetEnvironmetRow:first").trigger('click');
-
 }
 
-/*
-For converting the form in JSON
- */
+// For converting the form in JSON
 $.fn.serializeObject = function()
 {
     var o = {};
@@ -236,7 +228,7 @@ function getAssetview(environment){
 }
 
 function getGoalview(environment){
-    window.goalEnvironment = environment;
+    window.assetEnvironment = environment;
     $.ajax({
         type:"GET",
         accept:"application/json",
@@ -259,7 +251,7 @@ function getGoalview(environment){
 }
 
 function getRiskview(environment){
-    window.riskEnvironment = environment;
+    window.assetEnvironment = environment;
     $.ajax({
         type:"GET",
         accept:"application/json",
@@ -281,7 +273,7 @@ function getRiskview(environment){
 }
 
 function getTaskview(environment){
-    window.taskEnvironment = environment;
+    window.assetEnvironment = environment;
     $.ajax({
         type:"GET",
         accept:"application/json",
@@ -292,6 +284,29 @@ function getTaskview(environment){
         url: serverIP + "/api/tasks/model/environment/" + environment.replace(" ","%20"),
         success: function(data){
           // console.log("in getTaskView " + data.innerHTML);
+           // console.log(this.url);
+           fillSvgViewer(data);
+
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+    });
+}
+
+function getPersonaview(pName){
+    window.personaName = pName;
+    $.ajax({
+        type:"GET",
+        accept:"application/json",
+        data: {
+            session_id: String($.session.get('sessionID'))
+        },
+        crossDomain: true,
+        url: serverIP + "/api/personas/model/name/" + personaName.replace(" ","%20"),
+        success: function(data){
+          // console.log("in getPersonaView " + data.innerHTML);
            // console.log(this.url);
            fillSvgViewer(data);
 
@@ -484,9 +499,38 @@ function createAssetsTable(data, callback){
     });
     theTable.append(textToInsert.join(''));
     callback();
-
-
 }
+
+function createPersonasTable(data, callback){
+
+    var theTable = $(".theTable");
+    var textToInsert = [];
+    var i = 0;
+
+    //var thedata = $.parseJSON(data);
+    $.each(data, function(count, item) {
+        textToInsert[i++] = "<tr>"
+
+        textToInsert[i++] = '<td><button class="editPersonaButton" value="' + item.theName + '">' + 'Edit' + '</button> <button class="deletePersonaButton" value="' + item.theName + '">' + 'Delete' + '</button></td>';
+
+        textToInsert[i++] = '<td name="theName">';
+        textToInsert[i++] = item.theName;
+        textToInsert[i++] = '</td>';
+
+        textToInsert[i++] = '<td name="thePersonaType">';
+        textToInsert[i++] = item.thePersonaType;
+        textToInsert[i++] = '</td>';
+
+        textToInsert[i++] = '<td name="theId" style="display:none;">';
+        textToInsert[i++] = item.theId;
+        textToInsert[i++] = '</td>';
+        textToInsert[i++] = '</tr>';
+    });
+    theTable.append(textToInsert.join(''));
+    callback();
+}
+
+
 /*
 filling up the environment table
  */
@@ -689,8 +733,27 @@ function fileDialogbox(callback){
         }
     });
     $(".comboboxD").css("visibility", "visible");
-
 }
+
+function fileExportDialogbox(callback){
+    var dialogwindow = $("#typeOfFile");
+    var select = dialogwindow.find("select");
+    dialogwindow.dialog({
+        modal: true,
+        buttons: {
+            Ok: function () {
+                var text =  select.find("option:selected" ).text();
+                if(jQuery.isFunction(callback)){
+                    callback(text);
+                    $("#exportFile").trigger('click')
+                }
+                $(this).dialog("close");
+            }
+        }
+    });
+    $(".comboboxD").css("visibility", "visible");
+}
+
 /*
  Dialog for choosing a new role for the responses
  */
@@ -1178,6 +1241,10 @@ function setTableHeader(){
             debugLogger("Is Attacker");
             thead = "<th width='120px' id='addNewAttacker'><i class='fa fa-plus floatCenter'></i></th><th>Name</th><th>Description</th>";
             break;
+        case "Personas":
+            debugLogger("Is Persona");
+            thead = "<th width='120px' id='addNewPersona'><i class='fa fa-plus floatCenter'></i></th><th>Name</th><th>Type</th>";
+            break;
         case "Risks":
             debugLogger("Is Risk");
             thead = "<th width='120px' id='addnewRisk'><i class='fa fa-plus floatCenter'></i></th><th>Name</th>";
@@ -1443,8 +1510,8 @@ function getAssetDefinition(props){
         }
      });
     $('#Properties').find('tbody').append(textToInsert.join(''));
-
 }
+
 function getImagedir(imageName){
     return serverIP + "/images/"+ imageName;
 }

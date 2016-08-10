@@ -20,17 +20,53 @@ import pydot
 from cairis.core.ARM import *
 from cairis.core.Borg import Borg
 from cairis.core.colourcodes import threatColourCode
+from cairis.core.colourcodes import threatLikelihoodColourCode
+from cairis.core.colourcodes import vulnerabilitySeverityColourCode
 from cairis.core.colourcodes import usabilityColourCode
 from cairis.core.colourcodes import riskTextColourCode
 
 USECASE_TYPE = 0
 MISUSECASE_TYPE = 1
 
+def arrayToAssetSecurityPropertiesTable(spArray,objtName):
+  colorScheme = ["black","red","green","blue","yellow","cyan","purple","gray"]
+  buf = '<<TABLE cellborder="1" border="0" cellspacing="2">'
+  buf += '<TR><TD colspan="3">' + objtName + '</TD></TR>' 
+  ci = 0 
+  for x in spArray:
+    if x != 0:
+      i = x
+      buf += '<TR>'
+      while i > 0:
+        buf += '<TD bgcolor="' + colorScheme[ci] + '"></TD>'
+        i-= 1
+      buf += '</TR>'
+    ci += 1
+  buf += '</TABLE>>'
+  return buf
+
+def arrayToThreatSecurityPropertiesTable(spArray,objtName):
+  colorScheme = ["black","red","green","blue","yellow","cyan","purple","gray"]
+  buf = '<<TABLE cellborder="0" border="0" cellspacing="2">'
+  buf += '<TR><TD colspan="3">' + objtName + '</TD></TR>' 
+  ci = 0 
+  for x in spArray:
+    if x != 0:
+      if x == 1: buf += '<TR><TD></TD><TD></TD><TD bgcolor="' + colorScheme[ci] + '"></TD></TR>'
+      elif x == 2: buf += '<TR><TD></TD><TD bgcolor="' + colorScheme[ci] + '" border="1"></TD><TD bgcolor="' + colorScheme[ci] + '" border="1"></TD></TR>'
+      else: buf += '<TR><TD bgcolor="' + colorScheme[ci] + '" border="1"></TD><TD bgcolor="' + colorScheme[ci] + '" border="1"></TD><TD bgcolor="' + colorScheme[ci] + '" border="1"></TD></TR>'
+    ci += 1
+  buf += '</TABLE>>'
+  return buf
+
+
+
 class EnvironmentModel:
   def __init__(self,tlinks,environmentName,dp, fontName=None, fontSize=None):
     self.theTraceLinks = tlinks
     self.theEnvironmentName = environmentName
     self.dbProxy = dp
+    self.theEnvironmentObject = self.dbProxy.dimensionObject(self.theEnvironmentName,'environment')
     self.theGraph = pydot.Dot()
     b = Borg()
     self.fontSize = fontSize or b.fontSize
@@ -46,23 +82,28 @@ class EnvironmentModel:
     return len(self.theTraceLinks)
 
   def buildNode(self,dimName,objtName):
+    b = Borg()
     objtUrl = dimName + '#' + str(objtName)
     if (dimName == 'persona'):
-      self.theGraph.add_node(pydot.Node(objtName,shape='circle',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      self.theGraph.add_node(pydot.Node(objtName,shapefile=b.staticDir + '/images/modelActor.png',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl,peripheries='0'))
     elif (dimName == 'tag'):
       self.theGraph.add_node(pydot.Node(objtName,shape='note',style='filled',pencolor='black',color='yellow',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'attacker'):
-      self.theGraph.add_node(pydot.Node(objtName,shape='circle',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      self.theGraph.add_node(pydot.Node(objtName,shapefile=b.staticDir + '/images/modelAttacker.png',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl,peripheries='0'))
     elif (dimName == 'asset'):
       assetObjt = self.dbProxy.dimensionObject(objtName,'asset')
       borderColour = 'black'
       if (assetObjt.critical()):
         borderColour = 'red'
-      self.theGraph.add_node(pydot.Node(objtName,shape='record',color=borderColour,fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      self.theGraph.add_node(pydot.Node(objtName,shape='record',color=borderColour,fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl,width='0',height='0',margin='0',style='filled',fillcolor='white',label=arrayToAssetSecurityPropertiesTable(assetObjt.securityProperties(self.theEnvironmentName),objtName)))
     elif (dimName == 'threat'):
-      self.theGraph.add_node(pydot.Node(objtName,shape='record',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      thrObjt = self.dbProxy.dimensionObject(objtName,'threat')
+      thrLhood = thrObjt.likelihood(self.theEnvironmentName,self.theEnvironmentObject.duplicateProperty(),self.theEnvironmentObject.overridingEnvironment())
+      self.theGraph.add_node(pydot.Node(objtName,shape='record',style='filled',colorscheme='orrd5',color='black',fillcolor=threatLikelihoodColourCode(thrLhood),fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl,label=arrayToThreatSecurityPropertiesTable(thrObjt.securityProperties(self.theEnvironmentName),objtName)))
     elif (dimName == 'vulnerability'):
-      self.theGraph.add_node(pydot.Node(objtName,shape='record',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      vulObjt = self.dbProxy.dimensionObject(objtName,'vulnerability')
+      vulSev = vulObjt.severity(self.theEnvironmentName,self.theEnvironmentObject.duplicateProperty(),self.theEnvironmentObject.overridingEnvironment())
+      self.theGraph.add_node(pydot.Node(objtName,shape='record',style='filled',colorscheme='orrd4',color='black',fillcolor=vulnerabilitySeverityColourCode(vulSev),fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'risk'):
       riskObjt = self.dbProxy.dimensionObject(objtName,'risk')
       riskScores = self.dbProxy.riskScore(riskObjt.threat(),riskObjt.vulnerability(),self.theEnvironmentName,objtName)
@@ -71,7 +112,7 @@ class EnvironmentModel:
         currentScore = riskScore[2]
         if (currentScore > highestScore):
           highestScore = currentScore
-      self.theGraph.add_node(pydot.Node(objtName,shape='diamond',style='filled',color=threatColourCode(highestScore),fontcolor=riskTextColourCode(highestScore),fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      self.theGraph.add_node(pydot.Node(objtName,shape='diamond',style='filled',color='black',fillcolor=threatColourCode(highestScore),fontcolor=riskTextColourCode(highestScore),fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'response'):
       self.theGraph.add_node(pydot.Node(objtName,shape='note',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'countermeasure'):
@@ -79,13 +120,13 @@ class EnvironmentModel:
     elif (dimName == 'component'):
       self.theGraph.add_node(pydot.Node(objtName,shape='component',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'requirement'):
-      self.theGraph.add_node(pydot.Node(objtName,shape='circle',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      self.theGraph.add_node(pydot.Node(objtName,shape='parallelogram',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'goal'):
       self.theGraph.add_node(pydot.Node(objtName,shape='parallelogram',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'obstacle'):
       self.theGraph.add_node(pydot.Node(objtName,shape='polygon',skew='-1',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'role'):
-      self.theGraph.add_node(pydot.Node(objtName,shape='circle',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
+      self.theGraph.add_node(pydot.Node(objtName,shapefile=b.staticDir + '/images/modelRole.png',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl,peripheries='0'))
     elif (dimName == 'responsibility'):
       self.theGraph.add_node(pydot.Node(objtName,shape='doubleoctagon',fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl))
     elif (dimName == 'environment'):

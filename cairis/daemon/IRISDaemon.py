@@ -27,10 +27,10 @@ from flask_restful_swagger import swagger
 from cairis.core.Borg import Borg
 from CairisHTTPError import CairisHTTPError, ARMHTTPError
 from cairis.core.ARM import ARMException, DatabaseProxyException
-from cairis.controllers import AssetController, AttackerController, CImportController, DependencyController, \
-    DimensionController, EnvironmentController, GoalController, LoginController, MisuseCaseController, \
-    PersonaController, ProjectController, RequirementController, ResponseController, RiskController, RoleController, \
-    TaskController, ThreatController, UploadController, VulnerabilityController
+from cairis.controllers import AssetController, AttackerController, CImportController, CExportController, DependencyController, \
+    DimensionController, EnvironmentController, GoalController, LoginContoller, MisuseCaseController, PersonaController, ProjectController, \
+    RequirementController, ResponseController, RiskController, RoleController, TaskController, ThreatController, \
+    UploadController, VulnerabilityController
 
 __author__ = 'Robin Quetin'
 ''' This module uses Flask (tested using 0.10) & Flask-Restful (tested using 0.3.3) '''
@@ -216,6 +216,9 @@ def start():
     api.add_resource(GoalController.GoalByNameAPI, '/api/goals/name/<string:name>')
     api.add_resource(GoalController.GoalModelAPI, '/api/goals/model/environment/<string:environment>')
 
+    # Export routes
+    api.add_resource(CExportController.CExportTextAPI, '/api/export/text')
+
     # Import routes
     api.add_resource(CImportController.CImportTextAPI, '/api/import/text')
     api.add_resource(CImportController.CImportFileAPI, '/api/import/file/type/<string:type>')
@@ -226,7 +229,11 @@ def start():
 
     # Persona routes
     api.add_resource(PersonaController.PersonasAPI, '/api/personas')
+    api.add_resource(PersonaController.PersonaNamesAPI, '/api/personas/names', '/api/personas/all/names')
     api.add_resource(PersonaController.PersonaByNameAPI, '/api/personas/name/<string:name>')
+    api.add_resource(PersonaController.PersonaModelByNameAPI, '/api/personas/model/name/<string:persona>')
+    api.add_resource(PersonaController.PersonaTypesAPI, '/api/personas/types')
+    api.add_resource(PersonaController.PersonaEnvironmentPropertiesAPI, '/api/personas/name/<string:persona_name>/properties')
 
     # Project routes
     api.add_resource(ProjectController.ProjectSettingsAPI, '/api/settings')

@@ -88,7 +88,13 @@ function putRequirementRow(row){
 }
 function postRequirementRow(row,whatKind,value){
     var json = reqRowtoJSON(row);
-    var ursl = serverIP + "/api/requirements?asset=" + $('#assetsbox').find('option:selected').text().replace(' ',"%20");
+    var dimName = "asset";
+    var objtName = $( "#assetsbox").find("option:selected").text();
+    if (objtName == "") {
+      dimName = "environment";
+      objtName = $( "#environmentsbox").find("option:selected").text();
+    }
+    var ursl = serverIP + "/api/requirements?" + dimName + "=" + objtName.replace(' ',"%20");
     var object = {};
     object.object = json;
     object.session_id= $.session.get('sessionID');
@@ -831,6 +837,97 @@ function putProjectSettings(settings, callback){
         origin: serverIP,
         data: output,
         url: serverIP + "/api/settings?session_id=" + $.session.get('sessionID'),
+        success: function (data) {
+            showPopup(true);
+            if(jQuery.isFunction(callback)){
+                callback();
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            var error = JSON.parse(xhr.responseText);
+            showPopup(false, String(error.message));
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+    });
+}
+
+function putPersona(persona, oldName, usePopup, callback){
+   var output = {};
+    output.object = persona;
+    output.session_id = $.session.get('sessionID');
+    output = JSON.stringify(output);
+    debugLogger(output);
+
+    $.ajax({
+        type: "PUT",
+        dataType: "json",
+        contentType: "application/json",
+        accept: "application/json",
+        crossDomain: true,
+        processData: false,
+        origin: serverIP,
+        data: output,
+        url: serverIP + "/api/personas/name/" + oldName.replace(" ","%20") + "?session_id=" + $.session.get('sessionID'),
+        success: function (data) {
+            if(usePopup) {
+                showPopup(true);
+            }
+            if(jQuery.isFunction(callback)){
+                callback();
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            if(usePopup) {
+                var error = JSON.parse(xhr.responseText);
+                showPopup(false, String(error.message));
+            }
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+    });
+}
+function postPersona(persona, callback){
+    var output = {};
+    output.object = persona;
+    output.session_id = $.session.get('sessionID');
+    output = JSON.stringify(output);
+    debugLogger(output);
+
+    $.ajax({
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json",
+        accept: "application/json",
+        crossDomain: true,
+        processData: false,
+        origin: serverIP,
+        data: output,
+        url: serverIP + "/api/personas" + "?session_id=" + $.session.get('sessionID'),
+        success: function (data) {
+            showPopup(true);
+            if(jQuery.isFunction(callback)){
+                callback();
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            var error = JSON.parse(xhr.responseText);
+            showPopup(false, String(error.message));
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+    });
+}
+function deletePersona(name, callback){
+    $.ajax({
+        type: "DELETE",
+        dataType: "json",
+        contentType: "application/json",
+        accept: "application/json",
+        crossDomain: true,
+        processData: false,
+        origin: serverIP,
+        url: serverIP + "/api/personas/name/" + name.replace(" ","%20") + "?session_id=" + $.session.get('sessionID'),
         success: function (data) {
             showPopup(true);
             if(jQuery.isFunction(callback)){

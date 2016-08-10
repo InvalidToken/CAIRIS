@@ -30,7 +30,7 @@ $("#addRow").click(function() {
         alert("Please select an asset or an environment");
     }
     else{
-        if($( "#assetsbox").find("option:selected" ).text() != "All"){
+        if($( "#assetsbox").find("option:selected" ).text() != ""){
             kind = "asset:" + $( "#assetsbox").find("option:selected" ).text();
         }else{
             kind = "environment:"+$( "#environmentsbox").find("option:selected" ).text();
@@ -70,11 +70,34 @@ $("#addRow").click(function() {
  */
 $("#removeReq").click(function() {
     if(window.activeTable =="Requirements"){
-        var oldrow = $("tr").eq(getActiveindex()).detach();
+      var reqName = $("tr").eq(getActiveindex()).find("td").eq(1).html();
+      var ursl = serverIP + "/api/requirements/name/" + reqName.replace(' ',"%20");
+      var object = {};
+      object.session_id= $.session.get('sessionID');
+      var objectoutput = JSON.stringify(object);
+
+      $.ajax({
+        type: "DELETE",
+        dataType: "json",
+        contentType: "application/json",
+        accept: "application/json",
+        data: objectoutput,
+        crossDomain: true,
+        url: ursl,
+        success: function (data) {
+          $("tr").eq(getActiveindex()).detach();
+          showPopup(true);
+          sortTableByRow(0);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            var error = JSON.parse(xhr.responseText);
+            showPopup(false, String(error.message));
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+      });
     }
 
-    //of remove
-    //TODO: AJAX CALL BEFORE REMOVE
 });
 
 $("#gridReq").click(function(){
@@ -223,7 +246,7 @@ $('#riskView').click(function(){
 
 
 /*
- When riskview is clicked
+ When taskview is clicked
  */
 $('#taskView').click(function(){
 
@@ -261,6 +284,44 @@ $('#taskView').click(function(){
     })});
 
 
+/*
+ When personaview is clicked
+ */
+$('#personaView').click(function(){
+
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        accept: "application/json",
+        data: {
+            session_id: String($.session.get('sessionID'))
+
+        },
+        crossDomain: true,
+        url: serverIP + "/api/personas/all/names",
+        success: function (data) {
+            $("#comboboxDialogSelect").empty();
+            $.each(data, function(i, item) {
+                $("#comboboxDialogSelect").append("<option value=" + item + ">"  + item + "</option>")
+            });
+            $( "#comboboxDialog" ).dialog({
+                modal: true,
+                buttons: {
+                    Ok: function() {
+                        $( this ).dialog( "close" );
+                        //Created a function, for readability
+                        getPersonaview($( "#comboboxDialogSelect").find("option:selected" ).text());
+                    }
+                }
+            });
+            $(".comboboxD").css("visibility","visible");
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+    })});
+
 
 $("#vulnerabilitiesClick").click(function(){
    createVulnerabilityTable()
@@ -290,7 +351,6 @@ $(document).on('click', "button.editRoleButton",function() {
                     var form = $('#editRoleOptionsform');
                     form.loadJSON(json, null);
                     $.session.set("RoleObject", JSON.stringify(json));
-
                     $.ajax({
                         type: "GET",
                         dataType: "json",
@@ -313,8 +373,6 @@ $(document).on('click', "button.editRoleButton",function() {
                             debugLogger("error: " + xhr.responseText + ", textstatus: " + textStatus + ", thrown: " + errorThrown);
                         }
                     });
-
-
                 });
             },
             error: function (xhr, textStatus, errorThrown) {
@@ -324,7 +382,6 @@ $(document).on('click', "button.editRoleButton",function() {
                 debugLogger("error: " + xhr.responseText + ", textstatus: " + textStatus + ", thrown: " + errorThrown);
             }
         });
-
     }
 });
 $("#startNewProject").click(function () {
@@ -368,7 +425,6 @@ $(document).on('click', "button.editVulnerabilityButton",function(){
     else {
         var name = $(this).attr("value");
         $.session.set("VulnerabilityName", name.trim());
-
         $.ajax({
             type: "GET",
             dataType: "json",
@@ -408,7 +464,6 @@ $(document).on('click', "button.editVulnerabilityButton",function(){
                                 debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
                             }
                         });
-
                         var text = "";
                         $.each(newdata.theTags, function (index, tag) {
                             text += tag + ", ";
@@ -418,7 +473,6 @@ $(document).on('click', "button.editVulnerabilityButton",function(){
                         $.each(newdata.theEnvironmentProperties, function (index, envprop) {
                             $("#theVulEnvironments").append("<tr class='clickable-environments'><td class='deleteVulEnv'><i class='fa fa-minus'></i></td><td class='vulEnvProperties'>" + envprop.theEnvironmentName + "</td></tr>");
                         });
-
                         forceOpenOptions();
                         $("#theVulEnvironments").find(".vulEnvProperties:first").trigger('click');
                         $.session.set("VulnEnvironmentName", $("#theVulEnvironments").find(".vulEnvProperties:first").text());
@@ -1096,5 +1150,86 @@ function fillAssetTable(){
 }
 
 /*
-For updating the Assets
+Add a persona
  */
+$(document).on('click', "#addNewPersona",function(){
+    fillOptionMenu("fastTemplates/editPersonasOptions.html","#optionsContent",null,true,true,function(){
+    forceOpenOptions();
+    var typeSelect = $('#theType');
+    typeSelect.append($('<option value="Primary"></option>'));
+    typeSelect.append($('<option value="Secondary"></option>'));
+})});
+
+/*
+Delete an asset
+ */
+$(document).on('click', "button.deletePersonaButton",function(){
+    var name = $(this).attr("value");
+    $.ajax({
+        type: "DELETE",
+        dataType: "json",
+        accept: "application/json",
+        data: {
+            session_id: String($.session.get('sessionID')),
+            name: name
+        },
+        crossDomain: true,
+        url: serverIP + "/api/persona/name/" + name,
+        success: function (data) {
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                accept: "application/json",
+                data: {
+                    session_id: String($.session.get('sessionID'))
+                },
+                crossDomain: true,
+                url: serverIP + "/api/personas",
+                success: function (data) {
+                    window.activeTable = "Personas";
+                    setTableHeader();
+                    createPersonasTable(data, function(){
+                        newSorting(1);
+                    });
+                    activeElement("reqTable");
+
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    debugLogger(String(this.url));
+                    debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+                }
+            });
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            debugLogger(String(this.url));
+            debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+    });
+});
+
+
+optionsContent.on('click', '#cancelButtonPersona', function(){
+    $("#editPersonaOptionsform").show();
+    $("#editpropertiesWindow").hide();
+});
+optionsContent.on('click', '#UpdatePersonainGear',function(e){
+    e.preventDefault();
+    //alert($('#theName').val());
+   //var AssetSon =  JSON.parse($.session.get("Asset"));
+    //If new aset
+    if($("#editPersonasOptionsform").hasClass("new")){
+        alert("HasClass");
+        postPersonaForm($("#editPersonasOptionsform"), function(){
+            //INHERE
+            newPersonaEnvironment($.session.get("PersonaProperties"));
+        });
+
+    }
+    else{
+        putPersonaForm($("#editPersonasOptionsform"));
+        updatePersonaEnvironment($.session.get("PersonaProperties"));
+    }
+
+    fillPersonaTable();
+
+});
