@@ -28,7 +28,7 @@ from cairis.core.Borg import Borg
 from CairisHTTPError import CairisHTTPError, ARMHTTPError
 from cairis.core.ARM import ARMException, DatabaseProxyException
 from cairis.controllers import AssetController, AttackerController, CImportController, CExportController, DependencyController, \
-    DimensionController, EnvironmentController, GoalController, LoginContoller, MisuseCaseController, PersonaController, ProjectController, \
+    DimensionController, EnvironmentController, GoalController, LoginController, MisuseCaseController, PersonaController, ProjectController, \
     RequirementController, ResponseController, RiskController, RoleController, TaskController, ThreatController, \
     UploadController, VulnerabilityController
 
