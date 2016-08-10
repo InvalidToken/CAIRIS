@@ -40,26 +40,26 @@ def set_dbproxy():
     b.settings[id]['jsonPrettyPrint'] = setting.get('jsonPrettyPrint', False)
     return b.settings[id]
 
-'''
 def verify_login(conf):
     setting = parseConfigFile()
     db = MySQLdb.connect(host=setting['dbhost'], user=setting['dbuser'], passwd=setting['dbpasswd'], db=setting['dbname'])
     cur = db.cursor()
+    proxy = set_dbproxy()
     cur.execute("SELECT COUNT(1) FROM users WHERE username = %s;", [conf['username']])
     if cur.fetchone()[0]:
         cur.execute("SELECT password FROM users WHERE username = %s;", [conf['username']])
         for row in cur.fetchall():
             pwd_hash = row[0].replace("'", "").strip()
             #if (check_password_hash(pwd_hash, conf['password'])):
-            if (conf['password'] == pwd_hash):
-                proxy = set_dbproxy()
-                return proxy;
+            if (conf['password'] == pwd_hash):  
+                return proxy
             else:
-                print "Password Error"
+                proxy['error'] = "Password Error"             
+                return proxy
     else:
-        print "Username Error"
+        proxy['error'] = "Username Error"
+        return proxy
 '''
-
 def verify_login(conf):
     b = Borg()
     self.dbProxy = b.dbProxy
@@ -67,9 +67,12 @@ def verify_login(conf):
     searchResults = b.get_dbproxy('test')
     searchResults.searchUser(username)
     print searchResults
+    username = conf['username']
+    password = conf['password']    
     proxy = set_dbproxy()
     print proxy    
     return proxy
+'''
 
 def serve_user_login_form():
     b = Borg()
@@ -90,8 +93,15 @@ def handle_user_login_form():
         debug = ''
         '''debug += '{0}\nSession vars:\n{1}\nQuery string:\n'.format(
             'Successfully Logged In',
-            json_serialize(s, session_id='test'))'''
-        resp = make_response(debug + 'session_id={0}'.format('test'), httplib.OK)
+            json_serialize(s, session_id='test'))'''            
+        if s.has_key('error'):           
+            if (s['error'] == "Password Error"):
+                resp = make_response(debug + 'session_id={0}'.format(s['error']), httplib.OK)
+            elif (s['error'] == "Username Error"):
+                resp = make_response(debug + 'session_id={0}'.format(s['error']), httplib.OK)
+        else:
+            resp = make_response(debug + 'session_id={0}'.format(s['session_id']), httplib.OK)
+
         resp.headers['Content-type'] = 'text/plain'
         resp.headers['Access-Control-Allow-Origin'] = "*"
         return resp
@@ -137,7 +147,7 @@ class UserLoginAPI(Resource):
             b.logger.info(dict_form)
             s = verify_login(dict_form)
             
-            resp_dict = {'session_id': 'test', 'message': 'Configuration successfully applied'}
+            resp_dict = {'session_id': s['session_id'], 'message': 'Configuration successfully applied'}
             resp = make_response(encode(resp_dict), httplib.OK)
             resp.headers['Content-type'] = 'application/json'
             return resp

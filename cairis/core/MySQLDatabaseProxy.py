@@ -11661,7 +11661,6 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def searchUser(self, username):
     try:
-      pytest.set_trace()
       curs = self.conn.cursor()
       curs.execute('call grepUser(%s)', [username])
       if (curs.rowcount == -1):
