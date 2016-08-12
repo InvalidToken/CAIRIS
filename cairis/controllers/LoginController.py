@@ -83,6 +83,7 @@ def serve_user_login_form():
 
 def handle_user_login_form():
     try:
+        pytest.set_trace()
         dict_form = request.form
         conf = {
             'username': dict_form['username'],

@@ -117,7 +117,6 @@ def user_login_get():
     else:
         raise CairisHTTPError(httplib.NOT_FOUND, message='Not found')
 
-
 @app.errorhandler(CairisHTTPError)
 def handle_error(error):
     accept_header = request.headers.get('Accept', 'application/json')
