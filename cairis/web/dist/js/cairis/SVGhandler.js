@@ -52,6 +52,7 @@ $( document ).ajaxComplete(function() {
           url: serverIP + "/api/assets/name/"+ data.theName,
           success: function() {
             fillOptionMenu("fastTemplates/AssetOptions.html", "#optionsContent", dataArr,false,true,function(){
+              $("#optionsHeaderGear").text("Asset properties");
               $.each(data.theEnvironmentProperties, function (idx, env) {
                 if (window.assetEnvironment == env.theEnvironmentName) {
                   var propValues = [];
@@ -104,6 +105,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/PersonaOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Persona", JSON.stringify(data));
                 $('#personasForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Persona properties");
                 forceOpenOptions();
                 $.each(data.theEnvironmentProperties, function (idx, env) {
                   if (window.assetEnvironment == env.theEnvironmentName) {
@@ -152,6 +154,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/VulnerabilityOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Vulnerability", JSON.stringify(data));
                 $('#vulnerabilitiesForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Vulnerability properties");
                 forceOpenOptions();
                 $.each(data.theEnvironmentProperties, function (idx, env) {
                   if (window.assetEnvironment == env.theEnvironmentName) {
@@ -205,6 +208,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/RoleOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Role", JSON.stringify(data));
                 $('#rolesForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Role properties");
                 forceOpenOptions();
               });
             },
@@ -247,6 +251,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/ThreatOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Threat", JSON.stringify(data));
                 $('#threatsForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Threat properties");
                 forceOpenOptions();
                 $.each(data.theEnvironmentProperties, function (idx, env) {
                   if (window.assetEnvironment == env.theEnvironmentName) {
@@ -311,6 +316,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/RequirementOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Requirement", JSON.stringify(data));
                 $('#requirementsForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Requirement properties");
                 forceOpenOptions();
                 $('#originator').val(data.attrs.originator);
                 $('#rationale').val(data.attrs.rationale);
@@ -357,6 +363,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/GoalOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Goal", JSON.stringify(data));
                 $('#goalsForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Goal properties");
                 forceOpenOptions();
                 $.each(data.theEnvironmentProperties, function (idx, env) {
                   if (window.assetEnvironment == env.theEnvironmentName) {
@@ -408,6 +415,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/AttackerOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Attacker", JSON.stringify(data));
                 $('#attackersForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Attacker properties");
                 forceOpenOptions();
                 $.each(data.theEnvironmentProperties, function (idx, env) {
                   if (window.assetEnvironment == env.theEnvironmentName) {
@@ -467,6 +475,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/RiskOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Risk", JSON.stringify(data));
                 $('#risksForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Risk properties");
                 forceOpenOptions();
 
                 var riskName = $("#theName").val();
@@ -551,6 +560,7 @@ $( document ).ajaxComplete(function() {
               fillOptionMenu("fastTemplates/TaskOptions.html", "#optionsContent", data,false,true,function(){
                 $.session.set("Task", JSON.stringify(data));
                 $('#tasksForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Task properties");
                 forceOpenOptions();
                 $.each(data.theEnvironmentProperties, function (idx, env) {
                   if (window.assetEnvironment == env.theEnvironmentName) {
@@ -574,6 +584,127 @@ $( document ).ajaxComplete(function() {
                   }
                 });
               });
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              console.log(this.url);
+              debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+            }
+          });
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log(String(this.url));
+          debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+      });
+    }
+    else if(link.indexOf("responses") > -1) {
+      forceOpenOptions();
+      $.ajax({
+        type: "GET",
+        dataType: "json",
+        accept: "application/json",
+        data: {
+          session_id: String($.session.get('sessionID'))
+        },
+        crossDomain: true,
+        url: serverIP + link.replace(" ", "%20"),
+        success: function (data) {
+          $.ajax({
+            type:"GET",
+            dataType: "json",
+            accept:"application/json",
+            data: {
+              session_id: String($.session.get('sessionID'))
+            },
+            crossDomain: true,
+            url: serverIP + "/api/responses/name/"+ data.theName,
+            success: function(){
+              if (data.theResponseType == 'Accept') {
+                fillOptionMenu("fastTemplates/AcceptOptions.html", "#optionsContent", data,false,true,function(){
+                  $.session.set("Response", JSON.stringify(data));
+                  $('#acceptForm').loadJSON(data,null);
+                  $("#optionsHeaderGear").text("Accept Response properties");
+                  forceOpenOptions();
+                  $.each(data.theEnvironmentProperties, function (idx, env) {
+                    if (window.assetEnvironment == env[0].theEnvironmentName) {
+                      $('#theCost').val(env[0].theCost);
+                      $('#theRationale').val(env[0].theRationale);
+                    } 
+                  });
+                }); 
+              }
+              else if (data.theResponseType == 'Transfer') {
+                fillOptionMenu("fastTemplates/TransferOptions.html", "#optionsContent", data,false,true,function(){
+                  $.session.set("Response", JSON.stringify(data));
+                  $('#transferForm').loadJSON(data,null);
+                  $("#optionsHeaderGear").text("Transfer Response properties");
+                  forceOpenOptions();
+                  $.each(data.theEnvironmentProperties, function (idx, env) {
+                    if (window.assetEnvironment == env[0].theEnvironmentName) {
+                      var dimValues = [];
+                      for (var i = 0; i < env[0].theRoles.length; i++) {
+                        dimValues.push("<tr><td>" + env[0].theRoles[i].roleName + "</td><td>" + env[0].theRoles[i].cost + "</td></tr>"); 
+                      }
+                      $("#rolesTable").find("tbody").append(dimValues.join(' '));
+                      $('#theRationale').val(env[0].theRationale);
+                    } 
+                  });
+                }); 
+              }
+              else if (data.theResponseType == 'Prevent') {
+                fillOptionMenu("fastTemplates/PreventOptions.html", "#optionsContent", data,false,true,function(){
+                  $.session.set("Response", JSON.stringify(data));
+                  $('#preventForm').loadJSON(data,null);
+                  $("#optionsHeaderGear").text("Prevent Response properties");
+                  forceOpenOptions();
+                }); 
+              }
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              console.log(this.url);
+              debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+            }
+          });
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log(String(this.url));
+          debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+        }
+      });
+    }
+    else if(link.indexOf("misusecases") > -1) {
+      forceOpenOptions();
+      $.ajax({
+        type: "GET",
+        dataType: "json",
+        accept: "application/json",
+        data: {
+          session_id: String($.session.get('sessionID'))
+        },
+        crossDomain: true,
+        url: serverIP + link.replace(" ", "%20"),
+        success: function (data) {
+          $.ajax({
+            type:"GET",
+            dataType: "json",
+            accept:"application/json",
+            data: {
+              session_id: String($.session.get('sessionID'))
+            },
+            crossDomain: true,
+            url: serverIP + "/api/misusecases/name/"+ data.theName,
+            success: function(){
+              fillOptionMenu("fastTemplates/MisuseCaseOptions.html", "#optionsContent", data,false,true,function(){
+                $.session.set("MisuseCase", JSON.stringify(data));
+                $('#misuseCaseForm').loadJSON(data,null);
+                $("#optionsHeaderGear").text("Misuse Case properties");
+                forceOpenOptions();
+                $.each(data.theEnvironmentDictionary, function (idx, env) {
+                  if (window.assetEnvironment == env.theEnvironmentName) {
+                    $('#theDescription').val(env.theDescription);
+                  } 
+                });
+              }); 
             },
             error: function(xhr, textStatus, errorThrown) {
               console.log(this.url);

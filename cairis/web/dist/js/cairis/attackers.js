@@ -87,6 +87,7 @@ $(document).on('click', ".editAttackerButton", function () {
         success: function (data) {
             // console.log(JSON.stringify(rawData));
             fillOptionMenu("fastTemplates/editAttackerOptions.html", "#optionsContent", null, true, true, function () {
+                    $("#optionsHeaderGear").text("Attacker properties");
                     forceOpenOptions();
                     $("#addAttackerPropertyDiv").hide();
                     $.session.set("Attacker", JSON.stringify(data));
@@ -101,8 +102,8 @@ $(document).on('click', ".editAttackerButton", function () {
                        appendAttackerEnvironment(env.theEnvironmentName);
                     });
                     $("#theAttackerEnvironments").find(".attackerEnvironment:first").trigger('click');
-                    $("#theImages").attr("src",getImagedir(data.theImage));
-                    resaleImage($("#theImages"));
+                    $("#theAttackerImage").attr("src",getImagedir(data.theImage));
+                    resaleImage($("#theAttackerImage"));
 
                 }
             );
@@ -340,6 +341,7 @@ $(document).on("click", "#addNewAttacker", function () {
         $("#editAttackerOptionsForm").addClass("new");
         $("#Properties").hide();
         $.session.set("Attacker", JSON.stringify(jQuery.extend(true, {},attackerDefault )));
+        $("#optionsHeaderGear").text("Attacker properties");
         forceOpenOptions();
     });
 });
@@ -418,7 +420,7 @@ $(document).on('click', '.deleteAttackerButton', function (e) {
 Image uploading functions
  */
 var uploading = false;
-$("#optionsContent").on('click', '#theImages', function () {
+$("#optionsContent").on('click', '#theAttackerImage', function () {
     //$("#addAttackerPropertyDiv").addClass("new");
     if(!uploading) {
         $('#fileupload').trigger("click");
@@ -451,7 +453,7 @@ $("#optionsContent").on('change','#fileupload', function () {
             uploading = false;
             data = JSON.parse(data);
 
-            postImage(data.filename, getImagedir(data.filename));
+            postAttackerImage(data.filename, getImagedir(data.filename));
 
 
         },
@@ -475,14 +477,14 @@ $("#optionsContent").on('change','#fileupload', function () {
     });
 
 });
-function postImage(imagedir, actualDir) {
+function postAttackerImage(imagedir, actualDir) {
     var attacker = JSON.parse($.session.get("Attacker"));
 
     attacker.theImage = imagedir;
-    $("#theImages").attr("src", actualDir);
+    $("#theAttackerImage").attr("src", actualDir);
     putAttacker(attacker, attacker.theName, false, function () {
-        $("#theImages").attr("src", actualDir);
-        resaleImage($("#theImages"),200);
+        $("#theAttackerImage").attr("src", actualDir);
+        resaleImage($("#theAttackerImage"),200);
     });
 
     $.session.set("Attacker", JSON.stringify(attacker));
